@@ -328,3 +328,128 @@ img{max-width:100%}
   html{scroll-behavior:auto}
   .film-card .poster,.film-card .plate{transition:none}
 }
+
+/* ============================================================
+   CONTA NO CABEÇALHO
+   ============================================================ */
+.me{display:flex;align-items:center;gap:8px;margin-left:clamp(14px,2vw,24px);white-space:nowrap}
+.me-handle{font-size:11.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid transparent;padding-block:3px;transition:color .2s,border-color .2s}
+.me:hover .me-handle{color:var(--cream);border-bottom-color:var(--sepia)}
+.avatar{border-radius:50%;display:block;object-fit:cover}
+.avatar-blank{width:22px;height:22px;background:var(--ink-2);border:1px solid var(--rule)}
+.avatar-lg{border-radius:50%;object-fit:cover;align-self:start}
+@media(max-width:760px){.me{margin-left:auto;order:2}}
+
+/* ============================================================
+   FORMULÁRIOS
+   ============================================================ */
+.inp{
+  background:transparent;border:0;border-bottom:1px solid var(--rule);
+  color:var(--cream);font-family:var(--serif);font-size:16px;
+  padding:3px 0 5px;width:100%;transition:border-color .2s;
+}
+.inp:hover{border-bottom-color:rgba(244,244,240,.24)}
+.inp:focus{outline:none;border-bottom-color:var(--sepia)}
+.inp::placeholder{color:var(--faint)}
+.inp.narrow{max-width:72px}
+.inp.area{line-height:1.6;resize:vertical;min-height:88px;border:1px solid var(--rule);padding:12px 13px}
+.inp.area:focus{border-color:var(--sepia)}
+/* o seletor de data nativo vem claro: inverte o ícone para o tema escuro */
+.inp[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.45);cursor:pointer}
+.inp[type="date"]::-webkit-calendar-picker-indicator:hover{filter:invert(1) opacity(.8)}
+
+.field .opt{color:var(--faint);letter-spacing:.1em;text-transform:none;font-size:9px;margin-left:6px}
+.hint-s{margin:6px 0 0;font-size:11px;color:var(--faint);line-height:1.5}
+.hint-s code,.banner code,.lede code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86em;color:var(--cream)}
+
+.check{display:inline-flex;align-items:center;gap:9px;cursor:pointer;font-size:12.5px;color:var(--muted);padding-block:4px}
+.check input{appearance:none;-webkit-appearance:none;width:15px;height:15px;border:1px solid var(--rule);background:transparent;cursor:pointer;flex-shrink:0;position:relative;transition:border-color .2s,background .2s}
+.check input:hover{border-color:var(--sepia)}
+.check input:checked{background:var(--sepia-soft);border-color:var(--sepia)}
+.check input:checked::after{content:"";position:absolute;left:4px;top:1px;width:5px;height:9px;border-right:1.5px solid var(--sepia);border-bottom:1.5px solid var(--sepia);transform:rotate(40deg)}
+.check:hover{color:var(--cream)}
+
+.btn{
+  display:inline-block;font-family:var(--sans);font-size:10.5px;font-weight:500;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--cream);
+  border:1px solid var(--sepia);background:var(--sepia-soft);
+  padding:10px 20px;cursor:pointer;transition:background .25s,color .25s;
+}
+.btn:hover:not(:disabled){background:var(--sepia);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn-ghost{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--rule);padding-bottom:2px;transition:color .2s,border-color .2s}
+.btn-ghost:hover:not(:disabled){color:var(--sepia);border-bottom-color:var(--sepia)}
+.btn-ghost:disabled{opacity:.45;cursor:default}
+
+.form-msg{margin:4px 0 0;font-size:12px;line-height:1.5}
+.form-msg.ok{color:var(--sepia)}
+.form-msg.err{color:#C98A7A}
+.form-msg a{color:var(--sepia);border-bottom:1px solid var(--sepia-soft)}
+
+.signin{display:flex;flex-direction:column;gap:11px;align-items:start}
+.handle-row{display:flex;align-items:baseline;gap:2px}
+.handle-prefix{font-family:var(--serif);font-size:16px;color:var(--faint)}
+.conta-foot{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline;border-top:1px solid var(--rule);padding-top:20px;margin-top:8px}
+.conta-foot a{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--sepia)}
+.conta-foot a:hover{border-bottom:1px solid var(--sepia)}
+
+/* ============================================================
+   NOTA EM ESTRELAS
+   ============================================================ */
+.stars,.stars-ro{display:inline-flex;gap:2px;align-items:center}
+.stars .star,.stars-ro .star{position:relative;width:20px;height:20px;flex-shrink:0}
+.stars-ro .star{width:14px;height:14px}
+.stars svg,.stars-ro svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.stars .out,.stars-ro .out{fill:none;stroke:var(--faint);stroke-width:1.3}
+.stars .in,.stars-ro .in{fill:var(--sepia);stroke:none;clip-path:inset(0 var(--cut,100%) 0 0)}
+.stars .half{position:absolute;top:0;height:100%;width:50%;z-index:2;cursor:pointer}
+.stars .half.l{left:0}
+.stars .half.r{right:0}
+.stars input{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* foco visível no radiogroup: o anel vai na estrela, não no input oculto */
+.stars .half:has(input:focus-visible){outline:1px solid var(--sepia);outline-offset:2px}
+.rating-field{display:flex;align-items:center;gap:11px;flex-wrap:wrap;min-height:28px}
+.rating-read{font-size:11px;color:var(--faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rating-clear{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--rule)}
+.rating-clear:hover{color:var(--sepia)}
+
+/* ============================================================
+   CAIXA DE LOG
+   ============================================================ */
+.logbox{border:1px solid var(--rule);background:var(--ink-2);padding:clamp(16px,2.2vw,24px)}
+.logbox-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-bottom:16px}
+.logbox-since{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.logform{display:flex;flex-direction:column;gap:18px}
+.logform-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(144px,1fr));gap:18px 22px;align-items:start}
+.logform-foot{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;border-top:1px solid var(--rule-soft);padding-top:16px}
+.logform-delete{margin-top:14px;border-top:1px solid var(--rule-soft);padding-top:14px}
+
+/* ============================================================
+   REVIEWS E DIÁRIO
+   ============================================================ */
+.reviews{display:flex;flex-direction:column}
+.review{border-top:1px solid var(--rule-soft);padding-block:17px}
+.review:first-child{border-top:1px solid var(--rule)}
+.review-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:9px}
+.review-who{font-size:12.5px;font-weight:500;color:var(--cream);letter-spacing:.02em}
+.review-who:hover{color:var(--sepia)}
+.review-when{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-left:auto}
+.review-body{margin:0;font-family:var(--serif);font-size:16.5px;line-height:1.62;color:#D6D2C9;max-width:62ch;white-space:pre-line}
+.heart{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--sepia)}
+.spoiler-tag{display:inline-block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#C98A7A;border:1px solid rgba(201,138,122,.3);padding:2px 6px;margin-bottom:8px}
+
+.diary{display:flex;flex-direction:column}
+.diary-row{display:grid;grid-template-columns:72px minmax(0,1fr);gap:18px;border-top:1px solid var(--rule-soft);padding-block:18px}
+.diary-row:first-child{border-top:1px solid var(--rule)}
+.diary-poster{display:block;width:72px}
+.diary-main{min-width:0;display:flex;flex-direction:column;gap:8px}
+.diary-main h3{margin:0;font-family:var(--serif);font-size:20px;font-weight:400;line-height:1.18;color:var(--cream)}
+.diary-main h3 a:hover{color:var(--sepia)}
+.diary-main h3 .yr{color:var(--faint);font-size:14px;margin-left:8px;font-variant-numeric:tabular-nums}
+.diary-meta{display:flex;align-items:center;gap:7px 16px;flex-wrap:wrap;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-variant-numeric:tabular-nums}
+.diary-review{margin:0;font-family:var(--serif);font-size:15.5px;line-height:1.6;color:#C8C4BB;max-width:62ch;white-space:pre-line}
+@media(max-width:560px){
+  .diary-row{grid-template-columns:56px minmax(0,1fr);gap:14px}
+  .diary-poster{width:56px}
+}

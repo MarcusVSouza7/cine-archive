@@ -2,7 +2,7 @@
 
 Protótipo de um arquivo de cinema de curadoria: **37 obras fundamentais organizadas por escolas cinematográficas**, não por popularidade ou algoritmo. Cada ficha devolve o filme ao movimento que o produziu.
 
-Página única, sem dependências, sem build. Abra o `index.html` e funciona.
+Aplicação Next.js com acervo curado, enriquecimento pelo TMDb e perfis com diário, notas e reviews. Roda sem nenhuma credencial: sem Supabase, lê o acervo dos JSON em `data/` e diz na tela o que está desligado.
 
 ---
 
@@ -41,13 +41,16 @@ Labels em caixa alta com `.14`–`.2em` de tracking. Todos os números com `font
 
 | Seção | O que faz |
 |---|---|
-| **Cabeçalho** | Logo, menu, busca em overlay (ícone ou `Ctrl K`; `Enter` abre a primeira ficha, `Esc` fecha) |
+| **Cabeçalho** | Logo, menu e a conta — avatar e handle quando logado, "Entrar" quando não |
 | **A seleção** | Seis entradas curadas — a porta de entrada mais limpa para cada corrente |
-| **Escolas** | 9 correntes com verbete editorial: condições históricas, diretores-chave, marcas estéticas e as 3 obras essenciais clicáveis |
+| **Escolas** | 9 correntes com verbete editorial: condições históricas, diretores-chave, marcas estéticas e as obras essenciais |
 | **Explorador** | Filtros de país, década e escola + ordenação, com chips de filtro ativo e alternância Grade ⇄ Lista editorial |
-| **Rankings** | Dois modos próprios — *Top por década* e *Top por país* — que agrupam e numeram 1–5 dentro de cada grupo, respeitando os filtros ativos |
-| **Ficha do filme** | Placa, título original, ficha técnica, sinopse, as duas notas, onde assistir e conexões (escola, mesmo diretor, mesma corrente) |
-| **Sobre** | Critério de curadoria e o esquema JSON comentado |
+| **Rankings** | *Top por década* e *Top por país* — agrupam e numeram 1–5 dentro de cada grupo, respeitando os filtros ativos |
+| **Ficha do filme** | Cartaz, ficha técnica, sinopse, as três notas, elenco e disponibilidade do TMDb, seu log e as reviews |
+| **Perfil** | `/u/[handle]`: favoritos, contagens e o diário com data, nota, favorito e review |
+| **Sobre** | Critério de curadoria e o que o TMDb faz — e não faz |
+
+**Não portado do v0:** a busca em overlay (`Ctrl K`). Existe em `index.html` e ainda não foi reescrita na aplicação — está na lista de pendências abaixo.
 
 ### Acessibilidade e responsividade
 
@@ -143,48 +146,113 @@ Títulos, títulos originais, diretores, anos, países e durações são verific
 
 ## Rodar
 
-`index.html` é um documento completo e autossuficiente — sem build, sem dependências, sem passo de instalação. Abrir direto funciona, porque os dados estão embutidos no próprio HTML em `<script type="application/json">`:
-
 ```sh
-start index.html      # Windows
+npm install
+npm run dev          # localhost:3000
 ```
 
-Os arquivos em `data/` são a mesma fonte, extraídos para consumo por uma API ou build futuro. Para servir via HTTP:
+Funciona imediatamente, sem `.env.local`: o acervo vem dos JSON em `data/` e um aviso na tela diz o que falta ligar. Para acender banco, login e cartazes, veja a seção seguinte.
 
 ```sh
-python -m http.server 8000
+npm run build        # build de produção
+npm run typecheck    # tsc --noEmit
+npm run seed:gen     # data/*.json -> supabase/seed.sql
+npm run tmdb:backfill
 ```
 
-No ar pelo GitHub Pages: **https://marcusvsouza7.github.io/cine-archive/**
+**O protótipo v0** continua em `index.html` na raiz, documento autossuficiente que abre direto no navegador. É o que o GitHub Pages serve hoje em **https://marcusvsouza7.github.io/cine-archive/** — Pages não roda Next.js, então quando a aplicação subir para a Vercel esse arquivo vai para a branch `static-v0`.
+
+---
+
+## Ligar o Supabase e o TMDb
+
+A aplicação roda sem nada disso — lê o acervo dos JSON e mostra na tela o que está desligado. Os passos abaixo acendem o resto.
+
+**1. Projeto e credenciais.** Crie um projeto em supabase.com. Em *Project Settings → API*, copie a URL e a chave `anon` para `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+```
+
+**2. Schema.** No *SQL Editor*, rode em ordem:
+
+```
+supabase/migrations/0001_init.sql
+supabase/migrations/0002_onboarding.sql
+```
+
+**3. Acervo.** Gere e rode o seed:
+
+```sh
+npm run seed:gen        # data/*.json -> supabase/seed.sql
+```
+
+Cole `supabase/seed.sql` no SQL Editor. É idempotente: pode rodar quantas vezes quiser.
+
+**4. OAuth.** Em *Authentication → Providers*, habilite Google e GitHub e preencha client ID e secret de cada um. Em *Authentication → URL Configuration*:
+
+- **Site URL:** `http://localhost:3000`
+- **Redirect URLs:** `http://localhost:3000/auth/callback`
+
+Em produção, acrescente o domínio da Vercel às Redirect URLs — sem isso o login volta para `localhost` e falha.
+
+**5. TMDb.** Pegue o *API Read Access Token* (v4) em themoviedb.org → *Settings → API* e ponha em `.env.local`:
+
+```
+TMDB_READ_TOKEN=eyJ...
+```
+
+Depois ligue os filmes ao TMDb e propague os cartazes:
+
+```sh
+npm run tmdb:backfill -- --dry-run   # confere os pareamentos
+npm run tmdb:backfill                # grava tmdb_id e poster_path no JSON
+npm run seed:gen                     # regenera o seed com os novos campos
+```
+
+Rode o `seed.sql` de novo. O que ficar ambíguo sai em `data/tmdb-revisao.json` para você resolver à mão — o script não adivinha, porque um `tmdb_id` errado contamina cartaz, elenco e disponibilidade daquela obra em silêncio.
+
+O aviso de "modo protótipo" desaparece sozinho quando as duas fontes estão no lugar.
 
 ---
 
 ## Estado
 
-**v0 — protótipo estático, no ar.** Conceito visual e arquitetura de informação, com dados embutidos.
+**v0 — protótipo estático.** `index.html` na raiz, dados embutidos. É o que o GitHub Pages ainda serve.
 
-**v1 — em definição.** Catálogo enriquecido pelo TMDb e sistema de perfis com log, notas e reviews. As decisões de arquitetura, o modelo de dados e as fases estão em **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
+**v1 — aplicação Next.js.** Acervo, escolas, explorador, rankings, fichas, autenticação OAuth, perfis públicos, diário, notas em meias estrelas e reviews.
 
-Resumo: Next.js na Vercel + Supabase (Postgres, Auth, RLS). O acervo continua curado — o TMDb traz pôster, elenco e disponibilidade, ligado por `tmdb_id`, e **não** define o que entra. `movement` permanece dado seu, porque o TMDb não tem esse conceito.
+| Rota | O que é |
+|---|---|
+| `/` | home editorial |
+| `/escolas`, `/escolas/[slug]` | as correntes e suas obras |
+| `/explorar` | filtros e rankings, com estado na URL |
+| `/filmes/[slug]` | ficha curada + TMDb + seu log + reviews |
+| `/u/[handle]` | perfil público: favoritos e diário |
+| `/conta` | handle, nome e bio |
+| `/login`, `/auth/callback` | OAuth Google e GitHub |
 
-```
-supabase/migrations/0001_init.sql   schema com RLS: profiles, movements, films, entries
-supabase/seed.sql                   gerado dos JSON — não editar a mão
-scripts/generate-seed.mjs           JSON -> seed.sql, com validação de FK e slug
-scripts/backfill-tmdb-ids.mjs       preenche tmdb_id e poster_path; ambíguos vão para revisão
-```
+Decisões e modelo de dados em **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
 
-Os scripts não têm dependências — `fetch` global e `node:fs`, Node 18+.
+### Pontos de arquitetura que não são óbvios no código
 
-```sh
-node scripts/generate-seed.mjs
-TMDB_READ_TOKEN=... node scripts/backfill-tmdb-ids.mjs --dry-run
-```
+**Fonte dupla.** `lib/data.ts` lê o Supabase quando as variáveis existem e os JSON quando não existem, normalizando as duas para um tipo só. Semear o banco é trocar a fonte, não reescrever a aplicação.
+
+**RLS é a autoridade.** Toda escrita passa pelo cliente de servidor, que leva o JWT do usuário. A aplicação não checa dono de linha — se tentar gravar no log de outra pessoa, o Postgres recusa. As validações nas Server Actions existem só para dar mensagem decente antes de o banco recusar.
+
+**O acervo não tem política de escrita.** `movements` e `films` têm RLS ligado e nenhuma policy de `insert`/`update`/`delete`. Nem usuário autenticado toca na curadoria: só o `service_role`, por seed e backfill.
+
+**Três notas, três colunas.** `archive_score` e `historical_relevance` são editoriais. A média dos leitores vem da view `film_stats`. Nunca se misturam — é o que separa um arquivo de curadoria de um agregador.
+
+**`unstable_rethrow` nos catch.** `lib/auth.ts` e `lib/entries.ts` degradam para vazio quando o Supabase falha, mas rejogam os erros de controle do Next. Sem isso o `DynamicServerError` de `cookies()` seria engolido, a rota não seria marcada como dinâmica, e a página anônima ficaria em cache para quem está logado.
 
 ### Depois de v1
 
+- [ ] Busca em overlay, reescrita como rota com `searchParams`
 - [ ] Diário com múltiplas entradas por filme (remover o `unique` em `entries`)
 - [ ] Watchlist e listas ordenáveis
 - [ ] Seguir perfis e feed de atividade
+- [ ] Moderação: denúncia e bloqueio antes de abrir cadastro ao público
 - [ ] Notas de arquivo com proveniência citada por obra
 - [ ] Páginas próprias por diretor

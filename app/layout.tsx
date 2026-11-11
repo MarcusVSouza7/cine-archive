@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
+import Image from "next/image";
 import Link from "next/link";
+import { authDisponivel, getCurrentProfile } from "@/lib/auth";
 import "./globals.css";
 
 /* As duas famílias do projeto, auto-hospedadas pelo next/font:
@@ -49,9 +51,11 @@ const NAV = [
   { href: "/sobre", label: "Sobre" },
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const perfil = await getCurrentProfile();
+
   return (
     <html lang="pt-BR" className={`${serif.variable} ${sans.variable}`}>
       <body>
@@ -67,6 +71,28 @@ export default function RootLayout({
                 </Link>
               ))}
             </nav>
+
+            {authDisponivel &&
+              (perfil ? (
+                <Link href={`/u/${perfil.handle}`} className="me">
+                  {perfil.avatarUrl ? (
+                    <Image
+                      src={perfil.avatarUrl}
+                      alt=""
+                      width={22}
+                      height={22}
+                      className="avatar"
+                    />
+                  ) : (
+                    <span className="avatar avatar-blank" aria-hidden="true" />
+                  )}
+                  <span className="me-handle">{perfil.handle}</span>
+                </Link>
+              ) : (
+                <Link href="/login" className="me">
+                  <span className="me-handle">Entrar</span>
+                </Link>
+              ))}
           </div>
         </header>
 

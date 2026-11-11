@@ -55,6 +55,8 @@ export type Profile = {
   displayName: string;
   bio: string | null;
   avatarUrl: string | null;
+  /** True depois que o usuario salvou /conta pela primeira vez. */
+  onboarded: boolean;
 };
 
 export type Entry = {
@@ -68,6 +70,23 @@ export type Entry = {
   review: string | null;
   hasSpoilers: boolean;
   createdAt: string;
+};
+
+/** Uma entrada do log com o filme embutido: o diario de um perfil. */
+export type EntryWithFilm = Entry & { film: Film };
+
+/** Uma entrada com quem escreveu: as reviews de uma ficha. */
+export type EntryWithProfile = Entry & {
+  profile: Pick<Profile, "handle" | "displayName" | "avatarUrl">;
+};
+
+/** Contagens do perfil. */
+export type ProfileTotals = {
+  logged: number;
+  rated: number;
+  reviews: number;
+  likes: number;
+  avgRating: number | null;
 };
 
 /* ---------------- filtros do explorador ---------------- */

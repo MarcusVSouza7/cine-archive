@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { LogForm } from "@/components/LogForm";
 import { Poster } from "@/components/Poster";
+import { ReviewList } from "@/components/ReviewList";
 import { SourceBanner } from "@/components/SourceBanner";
+import { authDisponivel, getCurrentProfile } from "@/lib/auth";
 import {
   catalogNumbers,
   getFilm,
@@ -11,6 +14,7 @@ import {
   getIndex,
   getMovement,
 } from "@/lib/data";
+import { getFilmReviews, getMyEntry } from "@/lib/entries";
 import { getMovie, POSTER } from "@/lib/tmdb";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -42,11 +46,15 @@ export default async function Ficha({ params }: Props) {
   const film = await getFilm(slug);
   if (!film) notFound();
 
-  const [movement, { films }, stats] = await Promise.all([
-    getMovement(film.movementId),
-    getIndex(),
-    getFilmStats(film.id),
-  ]);
+  const [movement, { films }, stats, perfil, minhaEntrada, reviews] =
+    await Promise.all([
+      getMovement(film.movementId),
+      getIndex(),
+      getFilmStats(film.id),
+      getCurrentProfile(),
+      getMyEntry(film.id),
+      getFilmReviews(film.id),
+    ]);
 
   // Enriquecimento: se o TMDb cair ou não estiver configurado, a ficha
   // curada continua inteira. Nunca é fonte de verdade.
@@ -222,6 +230,49 @@ export default async function Ficha({ params }: Props) {
               )}
             </div>
           </div>
+
+          {/* Log do usuário. Três estados honestos: sem banco, sem
+              sessão, e o formulário de verdade. O primeiro aparece em vez
+              de sumir: seção invisível é indistinguível de não construída. */}
+          {!authDisponivel ? (
+            <section className="logbox">
+              <p className="block-t" style={{ marginBottom: 8 }}>
+                Seu registro
+              </p>
+              <p className="body-s">
+                Marcar como visto, nota em meias estrelas e review existem e
+                estão prontos — mas gravam no Postgres, então precisam do
+                Supabase conectado. Com <code>.env.local</code> preenchido, o
+                formulário aparece aqui.
+              </p>
+            </section>
+          ) : perfil ? (
+            <LogForm
+              filmId={film.id}
+              filmTitle={film.title}
+              entry={minhaEntrada}
+            />
+          ) : (
+            <section className="logbox">
+              <p className="block-t" style={{ marginBottom: 8 }}>
+                Seu registro
+              </p>
+              <p className="body-s" style={{ marginBottom: 14 }}>
+                Entre para marcar como visto, dar nota em meias estrelas e
+                escrever uma review desta obra.
+              </p>
+              <Link
+                href={`/login?next=${encodeURIComponent(`/filmes/${film.id}`)}`}
+                className="btn"
+              >
+                Entrar
+              </Link>
+            </section>
+          )}
+
+          <ReviewList
+            entries={reviews.filter((r) => r.profileId !== perfil?.id)}
+          />
 
           <div className="links">
             {movement && (
