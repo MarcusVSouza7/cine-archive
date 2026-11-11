@@ -64,6 +64,7 @@ type LinhaDbFilme = {
   movement_id: string; archive_score: number | null;
   historical_relevance: number | null; synopsis: string; archival: boolean;
   poster_path: string | null; backdrop_path: string | null;
+  in_archive?: boolean; vote_average?: number | null; vote_count?: number | null;
 };
 
 const deJsonEscola = (m: LinhaJsonEscola): Movement => ({ ...m });
@@ -90,6 +91,9 @@ const deJsonFilme = (f: LinhaJsonFilme): Film => ({
   archival: Boolean(f.archival),
   posterPath: f.poster_path ?? null,
   backdropPath: f.backdrop_path ?? null,
+  inArchive: true,
+  voteAverage: null,
+  voteCount: null,
 });
 
 const deDbFilme = (f: LinhaDbFilme): Film => ({
@@ -108,6 +112,9 @@ const deDbFilme = (f: LinhaDbFilme): Film => ({
   archival: f.archival,
   posterPath: f.poster_path,
   backdropPath: f.backdrop_path,
+  inArchive: true,
+  voteAverage: f.vote_average ?? null,
+  voteCount: f.vote_count ?? null,
 });
 
 /* ============================================================
@@ -141,9 +148,12 @@ export async function getFilms(): Promise<Film[]> {
     const linhas = await lerJson<LinhaJsonFilme[]>("films.json");
     return linhas.map(deJsonFilme);
   }
+  // Somente curadoria: o catalogo do TMDb nao mora nesta tabela, e os
+  // stubs criados por quem registrou um filme nao sao acervo.
   const { data, error } = await supabase()
     .from("films")
     .select("*")
+    .eq("in_archive", true)
     .order("archive_score", { ascending: false, nullsFirst: false });
   if (error) throw new Error(`Supabase films: ${error.message}`);
   return (data as LinhaDbFilme[]).map(deDbFilme);
@@ -158,6 +168,7 @@ export async function getFilm(slug: string): Promise<Film | null> {
     .from("films")
     .select("*")
     .eq("id", slug)
+    .eq("in_archive", true)
     .maybeSingle();
   if (error) throw new Error(`Supabase film ${slug}: ${error.message}`);
   return data ? deDbFilme(data as LinhaDbFilme) : null;

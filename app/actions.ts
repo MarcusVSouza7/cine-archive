@@ -3,9 +3,60 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentProfile, requireProfileId } from "@/lib/auth";
+import { tmdbIdDeSlug } from "@/lib/catalog";
 import { createSupabaseServer } from "@/lib/supabase/server";
+import { anoDe, getMovieStub } from "@/lib/tmdb";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type Resultado = { ok: boolean; erro?: string; aviso?: string };
+
+/**
+ * Garante que a linha de `films` exista antes de gravar a entrada.
+ *
+ * Obra do arquivo já existe. Filme do catálogo (`tmdb-<id>`) não: a linha
+ * nasce aqui, na primeira vez que alguém o registra. É assim que "todo o
+ * acervo do TMDb" fica registrável sem importar um milhão de títulos.
+ *
+ * A inserção passa pela função `ensure_tmdb_film`, que é SECURITY
+ * DEFINER: `films` continua sem policy de escrita, então nem usuário
+ * autenticado altera a curadoria. A função só cria linha nova, força
+ * `in_archive = false` e não aceita campo editorial algum.
+ *
+ * Devolve o id real a usar — que pode ser o slug editorial, se você
+ * catalogou a obra depois que alguém a registrou pelo catálogo.
+ */
+async function garantirFilme(
+  supabase: SupabaseClient,
+  filmId: string
+): Promise<{ id: string } | { erro: string }> {
+  const tmdbId = tmdbIdDeSlug(filmId);
+  if (!tmdbId) return { id: filmId }; // slug editorial: já está no banco
+
+  const stub = await getMovieStub(tmdbId);
+  if (!stub) {
+    return {
+      erro: "Não deu para ler este filme no TMDb agora. Tente de novo.",
+    };
+  }
+
+  const { data, error } = await supabase.rpc("ensure_tmdb_film", {
+    p_tmdb_id: tmdbId,
+    p_title: stub.title || stub.original_title,
+    p_original_title: stub.original_title,
+    p_year: anoDe(stub.release_date),
+    p_runtime: stub.runtime,
+    p_overview: stub.overview,
+    p_poster_path: stub.poster_path,
+    p_backdrop_path: stub.backdrop_path,
+    p_vote_average: stub.vote_average,
+    p_vote_count: stub.vote_count,
+    p_original_language: stub.original_language,
+    p_release_date: stub.release_date || null,
+  });
+
+  if (error) return { erro: `Não deu para registrar o filme: ${error.message}` };
+  return { id: typeof data === "string" ? data : filmId };
+}
 
 /* ============================================================
    LOG / REVIEW
@@ -64,6 +115,12 @@ export async function saveEntry(
     }
 
     const supabase = await createSupabaseServer();
+
+    // Filme do catálogo ainda não tem linha em `films`: cria antes.
+    const garantido = await garantirFilme(supabase, filmId);
+    if ("erro" in garantido) return { ok: false, erro: garantido.erro };
+    filmId = garantido.id;
+
     const { error } = await supabase.from("entries").upsert(
       {
         profile_id: profileId,

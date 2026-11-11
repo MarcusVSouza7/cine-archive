@@ -1,6 +1,6 @@
 # Cine:Archive
 
-Protótipo de um arquivo de cinema de curadoria: **37 obras fundamentais organizadas por escolas cinematográficas**, não por popularidade ou algoritmo. Cada ficha devolve o filme ao movimento que o produziu.
+Arquivo de cinema de curadoria: **37 obras fundamentais organizadas por escolas cinematográficas**, não por popularidade ou algoritmo — mais o **catálogo inteiro do TMDb** ao lado, para achar e registrar qualquer filme. Cada ficha devolve o filme ao movimento que o produziu.
 
 Aplicação Next.js com acervo curado, enriquecimento pelo TMDb e perfis com diário, notas e reviews. Roda sem nenhuma credencial: sem Supabase, lê o acervo dos JSON em `data/` e diz na tela o que está desligado.
 
@@ -44,13 +44,14 @@ Labels em caixa alta com `.14`–`.2em` de tracking. Todos os números com `font
 | **Cabeçalho** | Logo, menu e a conta — avatar e handle quando logado, "Entrar" quando não |
 | **A seleção** | Seis entradas curadas — a porta de entrada mais limpa para cada corrente |
 | **Escolas** | 9 correntes com verbete editorial: condições históricas, diretores-chave, marcas estéticas e as obras essenciais |
-| **Explorador** | Filtros de país, década e escola + ordenação, com chips de filtro ativo e alternância Grade ⇄ Lista editorial |
-| **Rankings** | *Top por década* e *Top por país* — agrupam e numeram 1–5 dentro de cada grupo, respeitando os filtros ativos |
+| **Explorador** | Dois escopos: **O Arquivo** (país, década, escola, nota editorial) e **Catálogo TMDb** (mais de um milhão de títulos, ao vivo, paginado) |
+| **Rankings** | *Top por década* e *Top por país* no Arquivo — agrupam e numeram 1–5 dentro de cada grupo, respeitando os filtros ativos |
+| **Buscar** | `/buscar?q=` procura no acervo curado e no TMDb ao mesmo tempo. Formulário GET: funciona sem JavaScript e o resultado é link |
 | **Ficha do filme** | Cartaz, ficha técnica, sinopse, as três notas, elenco e disponibilidade do TMDb, seu log e as reviews |
 | **Perfil** | `/u/[handle]`: favoritos, contagens e o diário com data, nota, favorito e review |
 | **Sobre** | Critério de curadoria e o que o TMDb faz — e não faz |
 
-**Não portado do v0:** a busca em overlay (`Ctrl K`). Existe em `index.html` e ainda não foi reescrita na aplicação — está na lista de pendências abaixo.
+A busca do v0, que era um overlay com `Ctrl K`, voltou como rota própria: `/buscar`. Formulário GET em vez de estado de cliente, então o resultado é compartilhável.
 
 ### Acessibilidade e responsividade
 
@@ -227,8 +228,11 @@ O aviso de "modo protótipo" desaparece sozinho quando as duas fontes estão no 
 |---|---|
 | `/` | home editorial |
 | `/escolas`, `/escolas/[slug]` | as correntes e suas obras |
-| `/explorar` | filtros e rankings, com estado na URL |
+| `/explorar` | O Arquivo: filtros e rankings, com estado na URL |
+| `/explorar?scope=tmdb` | Catálogo TMDb: discover ao vivo, paginado |
+| `/buscar` | busca nos dois acervos ao mesmo tempo |
 | `/filmes/[slug]` | ficha curada + TMDb + seu log + reviews |
+| `/filmes/tmdb-[id]` | ficha do catálogo: sem curadoria, mas registrável |
 | `/u/[handle]` | perfil público: favoritos e diário |
 | `/conta` | handle, nome e bio |
 | `/login`, `/auth/callback` | OAuth Google e GitHub |
@@ -243,13 +247,16 @@ Decisões e modelo de dados em **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)*
 
 **O acervo não tem política de escrita.** `movements` e `films` têm RLS ligado e nenhuma policy de `insert`/`update`/`delete`. Nem usuário autenticado toca na curadoria: só o `service_role`, por seed e backfill.
 
-**Três notas, três colunas.** `archive_score` e `historical_relevance` são editoriais. A média dos leitores vem da view `film_stats`. Nunca se misturam — é o que separa um arquivo de curadoria de um agregador.
+**Quatro notas, quatro colunas.** `archive_score` e `historical_relevance` são editoriais (0–100), a média dos leitores vem da view `film_stats` (0–5), e o `vote_average` vem do TMDb (0–10). Aparecem lado a lado, cada uma rotulada com sua escala, e nunca se somam — é o que separa um arquivo de curadoria de um agregador.
+
+**Duas populações em `films`.** `in_archive = true` é curadoria sua: escola, nota de arquivo, sinopse escrita. `in_archive = false` é stub nascido do TMDb porque alguém registrou o filme. `getFilms()` filtra pelo flag, então o Arquivo nunca mistura. O catálogo completo **não** é importado — os termos do TMDb proíbem replicar a base deles, e a navegação bate na API ao vivo.
+
+**`ensure_tmdb_film` é a única porta de escrita em `films`.** A tabela continua sem policy de escrita; a função é `SECURITY DEFINER`, só cria linha nova, força `in_archive = false`, força o id `tmdb-<id>` para não colidir com slug editorial, e não aceita campo de curadoria como parâmetro.
 
 **`unstable_rethrow` nos catch.** `lib/auth.ts` e `lib/entries.ts` degradam para vazio quando o Supabase falha, mas rejogam os erros de controle do Next. Sem isso o `DynamicServerError` de `cookies()` seria engolido, a rota não seria marcada como dinâmica, e a página anônima ficaria em cache para quem está logado.
 
 ### Depois de v1
 
-- [ ] Busca em overlay, reescrita como rota com `searchParams`
 - [ ] Diário com múltiplas entradas por filme (remover o `unique` em `entries`)
 - [ ] Watchlist e listas ordenáveis
 - [ ] Seguir perfis e feed de atividade

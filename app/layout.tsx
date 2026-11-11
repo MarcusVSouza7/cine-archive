@@ -45,9 +45,10 @@ export const viewport = {
 };
 
 const NAV = [
-  { href: "/explorar", label: "Filmes" },
+  { href: "/explorar", label: "Arquivo" },
   { href: "/escolas", label: "Escolas" },
-  { href: "/explorar?mode=decade", label: "Rankings" },
+  { href: "/explorar?scope=tmdb", label: "Catálogo" },
+  { href: "/buscar", label: "Buscar" },
   { href: "/sobre", label: "Sobre" },
 ];
 

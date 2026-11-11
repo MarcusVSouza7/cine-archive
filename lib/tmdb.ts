@@ -184,3 +184,235 @@ export async function searchMovie(query: string, year?: number) {
   );
   return d.results ?? [];
 }
+
+/* ============================================================
+   CATÁLOGO — navegar e buscar o TMDb inteiro
+   ============================================================ */
+
+/**
+ * Países de origem oferecidos no filtro do catálogo.
+ *
+ * Lista curada, não as ~250 do ISO 3166: um select com duzentas entradas
+ * não é navegação. São as cinematografias que o acervo já cobre mais as
+ * que um usuário deste site provavelmente procura.
+ */
+export const PAISES_TMDB: { iso: string; nome: string }[] = [
+  { iso: "BR", nome: "Brasil" },
+  { iso: "US", nome: "Estados Unidos" },
+  { iso: "FR", nome: "França" },
+  { iso: "IT", nome: "Itália" },
+  { iso: "DE", nome: "Alemanha" },
+  { iso: "JP", nome: "Japão" },
+  { iso: "TW", nome: "Taiwan" },
+  { iso: "DK", nome: "Dinamarca" },
+  { iso: "GB", nome: "Reino Unido" },
+  { iso: "ES", nome: "Espanha" },
+  { iso: "AR", nome: "Argentina" },
+  { iso: "MX", nome: "México" },
+  { iso: "KR", nome: "Coreia do Sul" },
+  { iso: "CN", nome: "China" },
+  { iso: "HK", nome: "Hong Kong" },
+  { iso: "IN", nome: "Índia" },
+  { iso: "IR", nome: "Irã" },
+  { iso: "RU", nome: "Rússia" },
+  { iso: "SE", nome: "Suécia" },
+  { iso: "PL", nome: "Polônia" },
+  { iso: "PT", nome: "Portugal" },
+  { iso: "CA", nome: "Canadá" },
+  { iso: "AU", nome: "Austrália" },
+];
+
+/** Décadas oferecidas no catálogo, de 1890 à atual. */
+export function decadasTmdb(): number[] {
+  const atual = Math.floor(new Date().getFullYear() / 10) * 10;
+  const out: number[] = [];
+  for (let d = atual; d >= 1890; d -= 10) out.push(d);
+  return out;
+}
+
+export const ORDENS_TMDB = {
+  popularity: "Mais populares",
+  rating: "Melhor avaliados",
+  "date-desc": "Lançamento — recente",
+  "date-asc": "Lançamento — antigo",
+  revenue: "Maior bilheteria",
+} as const;
+
+export type OrdemTmdb = keyof typeof ORDENS_TMDB;
+
+export function isOrdemTmdb(v: string | undefined): v is OrdemTmdb {
+  return !!v && v in ORDENS_TMDB;
+}
+
+/**
+ * Piso de votos para a ordenação por nota.
+ *
+ * Sem isto, `vote_average.desc` devolve filmes com três votos e média
+ * 10,0 no topo — o TMDb não aplica média bayesiana no discover. O piso é
+ * o que transforma "melhor avaliados" em algo que significa alguma coisa.
+ */
+const PISO_VOTOS = 300;
+
+export type ResultadoTmdb = {
+  id: number;
+  title: string;
+  original_title: string;
+  release_date: string | null;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  overview: string | null;
+  vote_average: number | null;
+  vote_count: number | null;
+  original_language: string | null;
+};
+
+export type PaginaTmdb = {
+  itens: ResultadoTmdb[];
+  pagina: number;
+  totalPaginas: number;
+  totalResultados: number;
+};
+
+type RespostaLista = {
+  page?: number;
+  results?: ResultadoTmdb[];
+  total_pages?: number;
+  total_results?: number;
+};
+
+const VAZIA: PaginaTmdb = {
+  itens: [],
+  pagina: 1,
+  totalPaginas: 0,
+  totalResultados: 0,
+};
+
+/** O discover do TMDb só serve até a página 500. */
+const PAGINA_MAX = 500;
+
+function normalizaPagina(resp: RespostaLista, pedida: number): PaginaTmdb {
+  return {
+    itens: resp.results ?? [],
+    pagina: resp.page ?? pedida,
+    totalPaginas: Math.min(resp.total_pages ?? 0, PAGINA_MAX),
+    totalResultados: resp.total_results ?? 0,
+  };
+}
+
+/**
+ * Navegação pelo catálogo inteiro: /discover/movie.
+ *
+ * É aqui que "todo o acervo do TMDb" acontece — ao vivo, sem importar
+ * nada para o banco.
+ */
+export async function discoverMovies(opcoes: {
+  country?: string;
+  decade?: string;
+  sort?: OrdemTmdb;
+  page?: number;
+}): Promise<PaginaTmdb> {
+  if (!TOKEN) return VAZIA;
+
+  const pagina = Math.min(Math.max(opcoes.page ?? 1, 1), PAGINA_MAX);
+
+  const params: Record<string, string> = {
+    language: "pt-BR",
+    include_adult: "false",
+    include_video: "false",
+    page: String(pagina),
+  };
+
+  switch (opcoes.sort ?? "popularity") {
+    case "rating":
+      params.sort_by = "vote_average.desc";
+      params["vote_count.gte"] = String(PISO_VOTOS);
+      break;
+    case "date-desc":
+      params.sort_by = "primary_release_date.desc";
+      // sem piso, "recente" devolve projeto anunciado e nunca lançado
+      params["vote_count.gte"] = "10";
+      break;
+    case "date-asc":
+      params.sort_by = "primary_release_date.asc";
+      params["primary_release_date.gte"] = "1890-01-01";
+      break;
+    case "revenue":
+      params.sort_by = "revenue.desc";
+      break;
+    default:
+      params.sort_by = "popularity.desc";
+  }
+
+  if (opcoes.country) params.with_origin_country = opcoes.country;
+
+  if (opcoes.decade && /^\d{4}$/.test(opcoes.decade)) {
+    const d = Number(opcoes.decade);
+    params["primary_release_date.gte"] = `${d}-01-01`;
+    params["primary_release_date.lte"] = `${d + 9}-12-31`;
+  }
+
+  try {
+    const resp = await chamar<RespostaLista>("/discover/movie", params, 3_600);
+    return normalizaPagina(resp, pagina);
+  } catch (e) {
+    console.error("[tmdb] discover falhou:", (e as Error).message);
+    return VAZIA;
+  }
+}
+
+/** Busca por texto no catálogo inteiro. */
+export async function searchCatalog(
+  query: string,
+  page = 1
+): Promise<PaginaTmdb> {
+  if (!TOKEN || !query.trim()) return VAZIA;
+
+  const pagina = Math.min(Math.max(page, 1), PAGINA_MAX);
+
+  try {
+    const resp = await chamar<RespostaLista>(
+      "/search/movie",
+      {
+        query: query.trim(),
+        include_adult: "false",
+        language: "pt-BR",
+        page: String(pagina),
+      },
+      600
+    );
+    return normalizaPagina(resp, pagina);
+  } catch (e) {
+    console.error("[tmdb] search falhou:", (e as Error).message);
+    return VAZIA;
+  }
+}
+
+/**
+ * Ficha mínima de um filme do TMDb.
+ *
+ * Usada para criar o stub no banco quando alguém registra um filme que
+ * ainda não existe lá. Não traz elenco nem providers: isso é a ficha
+ * completa, e stub é stub.
+ */
+export async function getMovieStub(tmdbId: number): Promise<ResultadoTmdb & {
+  runtime: number | null;
+} | null> {
+  if (!TOKEN) return null;
+  try {
+    return await chamar<ResultadoTmdb & { runtime: number | null }>(
+      `/movie/${tmdbId}`,
+      { language: "pt-BR" },
+      86_400
+    );
+  } catch (e) {
+    console.error("[tmdb] getMovieStub falhou:", (e as Error).message);
+    return null;
+  }
+}
+
+/** Ano a partir de release_date, que o TMDb devolve vazio com frequência. */
+export function anoDe(releaseDate: string | null | undefined): number | null {
+  if (!releaseDate) return null;
+  const a = Number(releaseDate.slice(0, 4));
+  return Number.isFinite(a) && a >= 1870 && a <= 2200 ? a : null;
+}

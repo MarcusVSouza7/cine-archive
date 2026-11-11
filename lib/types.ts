@@ -19,23 +19,55 @@ export type Movement = {
   sat: string;
 };
 
-export type Film = {
+/**
+ * A forma minima que as duas populacoes de filme sabem produzir.
+ *
+ *   ARQUIVO   curadoria propria: preenche tudo.
+ *   CATALOGO  o TMDb inteiro, ao vivo: deixa escola, pais e diretor
+ *             nulos, porque nao ha curadoria sobre ele.
+ *
+ * Grade, lista e diario consomem isto, entao servem as duas sem
+ * conversao. Quem precisa dos campos editoriais pede `Film`.
+ */
+export type CatalogItem = {
   id: string;
   tmdbId: number | null;
   title: string;
-  originalTitle: string;
+  originalTitle: string | null;
+  year: number | null;
+  /** Em cache do TMDb. Null -> a interface cai na placa tipografica. */
+  posterPath: string | null;
+  director: string | null;
+  country: string | null;
+  movementId: string | null;
+  inArchive: boolean;
+  /** Nota editorial 0-100. Nao e media de usuarios. Null fora do arquivo. */
+  archiveScore: number | null;
+  /** Media do TMDb, 0-10. Nao confundir com archiveScore nem com a da casa. */
+  voteAverage: number | null;
+  voteCount: number | null;
+};
+
+/**
+ * Obra do arquivo: um CatalogItem com a curadoria em cima.
+ *
+ * A intersecao estreita os campos que o catalogo deixa nulos — obra
+ * catalogada sempre tem ano, pais, diretor e escola. Por ser um subtipo,
+ * `Film` e aceito em qualquer lugar que peca `CatalogItem`.
+ */
+export type Film = CatalogItem & {
   year: number;
   country: string;
   director: string;
-  runtime: number | null;
+  originalTitle: string;
   movementId: string;
-  /** Nota editorial 0-100. Nao e media de usuarios. */
-  archiveScore: number | null;
+  inArchive: true;
+
+  runtime: number | null;
+  /** Relevancia historica 0-100. Editorial, como archiveScore. */
   historicalRelevance: number | null;
   synopsis: string;
   archival: boolean;
-  /** Em cache do TMDb. Null -> a interface cai na placa tipografica. */
-  posterPath: string | null;
   backdropPath: string | null;
 };
 
@@ -72,8 +104,13 @@ export type Entry = {
   createdAt: string;
 };
 
-/** Uma entrada do log com o filme embutido: o diario de um perfil. */
-export type EntryWithFilm = Entry & { film: Film };
+/**
+ * Uma entrada do log com o filme embutido: o diario de um perfil.
+ *
+ * CatalogItem e nao Film, porque a entrada pode apontar para um stub do
+ * TMDb, que nao tem escola nem nota editorial.
+ */
+export type EntryWithFilm = Entry & { film: CatalogItem };
 
 /** Uma entrada com quem escreveu: as reviews de uma ficha. */
 export type EntryWithProfile = Entry & {
@@ -110,6 +147,18 @@ export const MODES = {
 export type ModeKey = keyof typeof MODES;
 
 export type ViewKey = "grid" | "list";
+
+/** Qual das duas populacoes o explorador esta mostrando. */
+export const SCOPES = {
+  archive: "O Arquivo",
+  tmdb: "Catálogo TMDb",
+} as const;
+
+export type ScopeKey = keyof typeof SCOPES;
+
+export function isScopeKey(v: string | undefined): v is ScopeKey {
+  return !!v && v in SCOPES;
+}
 
 export type Query = {
   country: string;

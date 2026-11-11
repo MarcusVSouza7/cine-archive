@@ -9,10 +9,10 @@
 import { unstable_rethrow } from "next/navigation";
 import { authDisponivel, createSupabaseServer } from "./supabase/server";
 import type {
+  CatalogItem,
   Entry,
   EntryWithFilm,
   EntryWithProfile,
-  Film,
   Profile,
   ProfileTotals,
 } from "./types";
@@ -32,12 +32,15 @@ type LinhaEntry = {
   created_at: string;
 };
 
+/** Linha de `films` como ela chega: stub do TMDb deixa quase tudo nulo. */
 type LinhaFilme = {
-  id: string; tmdb_id: number | null; title: string; original_title: string;
-  year: number; country: string; director: string; runtime: number | null;
-  movement_id: string; archive_score: number | null;
-  historical_relevance: number | null; synopsis: string; archival: boolean;
-  poster_path: string | null; backdrop_path: string | null;
+  id: string; tmdb_id: number | null; title: string;
+  original_title: string | null;
+  year: number | null; country: string | null; director: string | null;
+  movement_id: string | null; archive_score: number | null;
+  poster_path: string | null;
+  in_archive: boolean | null;
+  vote_average: number | string | null; vote_count: number | null;
 };
 
 type LinhaPerfil = {
@@ -63,22 +66,20 @@ const deEntry = (e: LinhaEntry): Entry => ({
   createdAt: e.created_at,
 });
 
-const deFilme = (f: LinhaFilme): Film => ({
+const deFilme = (f: LinhaFilme): CatalogItem => ({
   id: f.id,
   tmdbId: f.tmdb_id,
   title: f.title,
   originalTitle: f.original_title,
   year: f.year,
-  country: f.country,
-  director: f.director,
-  runtime: f.runtime,
-  movementId: f.movement_id,
-  archiveScore: f.archive_score,
-  historicalRelevance: f.historical_relevance,
-  synopsis: f.synopsis,
-  archival: f.archival,
   posterPath: f.poster_path,
-  backdropPath: f.backdrop_path,
+  director: f.director,
+  country: f.country,
+  movementId: f.movement_id,
+  inArchive: Boolean(f.in_archive),
+  archiveScore: f.archive_score,
+  voteAverage: nota(f.vote_average),
+  voteCount: f.vote_count,
 });
 
 const CAMPOS = "id, profile_id, film_id, watched_on, watch_count, rating, liked, review, has_spoilers, created_at";

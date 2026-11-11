@@ -226,3 +226,100 @@ TMDB_READ_TOKEN=                # só servidor: token de leitura v4
 **Spam de signup.** OAuth reduz, não elimina. Se abrir ao público, `entries` precisa de rate limit por perfil.
 
 **Acoplamento ao TMDb.** Se o TMDb mudar de termos ou de preço, o acervo curado continua inteiro no seu banco — pôster e elenco somem, as 37 fichas não. O cache de `poster_path` é o que garante isso.
+
+---
+
+# Revisão — o catálogo inteiro do TMDb
+
+Decisão posterior ao documento acima, que a substitui onde houver conflito: **o acervo não é mais só as obras catalogadas.** Qualquer filme do TMDb precisa ser alcançável, buscável e registrável.
+
+## O que "todo o acervo do TMDb" pode significar
+
+Não pode significar copiá-lo. São mais de um milhão de títulos, os termos do TMDb proíbem replicar a base deles como banco concorrente, e isso não cabe em tier gratuito. Cache de desempenho é permitido; espelho não.
+
+O que é possível — e é o que o Letterboxd faz — é **alcance total com armazenamento parcial**: a navegação e a busca batem na API ao vivo, e uma linha local nasce só quando alguém interage com o filme.
+
+## Duas populações em `films`
+
+A tabela deixa de ser "o acervo" e passa a ser "as obras que este site conhece por algum motivo":
+
+| | `in_archive = true` | `in_archive = false` |
+|---|---|---|
+| Origem | curadoria sua | stub nascido do TMDb |
+| Id | slug editorial (`deus-diabo-1964`) | `tmdb-<id>` |
+| Escola | sempre | nunca |
+| Nota de arquivo | sim | não |
+| Sinopse | escrita por você | `overview` do TMDb |
+| Quantas | 37 | cresce com o uso |
+
+`getFilms()` filtra `in_archive = true`: o Arquivo nunca mistura. Os stubs existem para `entries` ter a que se referir.
+
+## Tipos: `CatalogItem` e `Film`
+
+```
+CatalogItem   a forma mínima que as duas populações sabem produzir.
+              Escola, país e diretor são nuláveis, porque o catálogo não
+              tem curadoria. Grade, lista e diário consomem isto.
+
+Film          CatalogItem & { year, country, director, movementId
+              estreitados para não-nulos } + os campos editoriais.
+              Por ser subtipo, passa em qualquer lugar que peça
+              CatalogItem — nenhuma conversão no caminho.
+```
+
+A intersecção é o que evita espalhar `| null` pela aplicação inteira só porque o catálogo não tem diretor.
+
+## Como um stub nasce
+
+`films` continua **sem policy de escrita**: nem usuário autenticado altera a curadoria. Registrar um filme do catálogo exige que a linha exista, e a ponte é uma função `SECURITY DEFINER`:
+
+```sql
+ensure_tmdb_film(p_tmdb_id, p_title, ...) returns text
+```
+
+O que ela garante, e por que não é um buraco na RLS:
+
+- só cria linha nova — `on conflict do nothing`, nunca altera existente
+- força `in_archive = false`: ninguém promove nada a curadoria por aqui
+- força o id no formato `tmdb-<id>`, então não dá para colidir com um slug editorial e sobrescrever obra do arquivo
+- não aceita `movement`, `archive_score` nem `synopsis` como parâmetro — campos de curadoria não passam por ela
+- se o `tmdb_id` já existir no arquivo, devolve o **slug editorial** daquela obra, e a entrada aponta para a ficha curada
+
+`saveEntry` chama isso antes do upsert quando o `filmId` começa com `tmdb-`.
+
+## Três escalas de nota, nunca somadas
+
+| Número | Escala | Origem |
+|---|---|---|
+| `archive_score` | 0–100 | editorial, sua |
+| `historical_relevance` | 0–100 | editorial, sua |
+| `film_stats.rating_avg` | 0–5 | leitores da casa |
+| `vote_average` | 0–10 | TMDb |
+
+Aparecem lado a lado na ficha, cada uma rotulada com sua escala. Somar ou mediar entre elas é o que transformaria o arquivo num agregador.
+
+## Rotas depois da revisão
+
+```
+/explorar                 O Arquivo: escolas, nota editorial, rankings
+/explorar?scope=tmdb      Catálogo TMDb: discover ao vivo, paginado
+/buscar?q=...             busca nos dois ao mesmo tempo
+/filmes/<slug>            ficha curada
+/filmes/tmdb-<id>         ficha do catálogo, sem curadoria, registrável
+```
+
+O seletor de escopo descarta os filtros ao trocar, de propósito: "Brasil" no Arquivo é o texto `Brasil` e no TMDb é o ISO `BR`, e uma década do Arquivo pode não existir no outro. Carregar valor incompatível daria lista vazia sem explicação.
+
+## Armadilhas que já estão tratadas
+
+**O piso de votos.** `sort_by=vote_average.desc` no discover do TMDb não aplica média bayesiana: sem `vote_count.gte`, "melhor avaliados" devolve filmes com três votos e média 10,0. O piso é 300.
+
+**Lançamento futuro.** `primary_release_date.desc` sem piso de votos devolve projeto anunciado e nunca lançado. Piso de 10 votos nessa ordenação.
+
+**Duplicata entre escopos.** Um filme do arquivo também aparece na resposta do TMDb. `cruzarComArquivo` troca o item pelo do arquivo, então o link leva à ficha curada e o mesmo filme não figura duas vezes como se fossem obras diferentes.
+
+**Página 500.** O discover do TMDb só serve até a página 500; a paginação respeita o teto.
+
+## O que isto NÃO muda
+
+As escolas continuam sendo dado seu. O TMDb não tem o conceito, e `keywords` é crowdsourced e inconsistente. Nenhuma obra entra no Arquivo por existir no TMDb — entra porque você catalogou e atribuiu uma corrente.

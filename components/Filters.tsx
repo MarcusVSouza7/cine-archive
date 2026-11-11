@@ -2,22 +2,41 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MODES, SORTS, type Movement } from "@/lib/types";
+import { SCOPES, type ScopeKey } from "@/lib/types";
+
+export type Opcao = { value: string; label: string };
 
 type Props = {
-  countries: string[];
-  decades: number[];
-  movements: Pick<Movement, "id" | "name">[];
+  scope: ScopeKey;
+  countries: Opcao[];
+  decades: Opcao[];
+  /** Só o Arquivo tem escolas: o TMDb não possui o conceito. */
+  movements?: Opcao[];
+  sorts: Record<string, string>;
+  /** Só o Arquivo tem rankings agrupados por nota editorial. */
+  modes?: Record<string, string>;
 };
 
 /**
- * Barra de filtros.
+ * Barra de filtros dos dois escopos.
  *
- * O estado vive na URL, não em useState: um ranking filtrado passa a ser
- * link que você manda para alguém. Os selects fazem replace (não push)
- * para não entupir o histórico do navegador a cada ajuste.
+ * O estado vive na URL, não em useState: um recorte filtrado é um link
+ * que você manda para alguém. Os selects fazem replace, não push, para
+ * não entupir o histórico a cada ajuste.
+ *
+ * Trocar de escopo descarta os filtros de propósito — "Brasil" no Arquivo
+ * é o texto `Brasil` e no TMDb é o ISO `BR`, e a década do Arquivo pode
+ * não existir no outro. Carregar valor incompatível daria lista vazia sem
+ * explicação.
  */
-export function Filters({ countries, decades, movements }: Props) {
+export function Filters({
+  scope,
+  countries,
+  decades,
+  movements,
+  sorts,
+  modes,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -26,20 +45,21 @@ export function Filters({ countries, decades, movements }: Props) {
     country: params.get("country") ?? "",
     decade: params.get("decade") ?? "",
     movement: params.get("movement") ?? "",
-    sort: params.get("sort") ?? "rating",
+    sort: params.get("sort") ?? "",
     mode: params.get("mode") ?? "browse",
     view: params.get("view") ?? "grid",
   };
 
-  const rankeando = atual.mode !== "browse";
+  const rankeando = Boolean(modes) && atual.mode !== "browse";
 
-  /** Monta uma URL com as mudanças aplicadas; valor vazio remove a chave. */
   function href(muda: Record<string, string>) {
     const p = new URLSearchParams(params.toString());
     for (const [k, v] of Object.entries(muda)) {
       if (v) p.set(k, v);
       else p.delete(k);
     }
+    // qualquer mudança de filtro volta para a primeira página
+    if (!("page" in muda)) p.delete("page");
     const qs = p.toString();
     return qs ? `${pathname}?${qs}` : pathname;
   }
@@ -49,30 +69,56 @@ export function Filters({ countries, decades, movements }: Props) {
   }
 
   const chips = [
-    atual.country && { chave: "country", rotulo: atual.country },
-    atual.decade && { chave: "decade", rotulo: `Anos ${atual.decade}` },
-    atual.movement && {
-      chave: "movement",
+    atual.country && {
+      chave: "country",
       rotulo:
-        movements.find((m) => m.id === atual.movement)?.name ?? atual.movement,
+        countries.find((c) => c.value === atual.country)?.label ?? atual.country,
     },
+    atual.decade && { chave: "decade", rotulo: `Anos ${atual.decade}` },
+    atual.movement &&
+      movements && {
+        chave: "movement",
+        rotulo:
+          movements.find((m) => m.value === atual.movement)?.label ??
+          atual.movement,
+      },
   ].filter(Boolean) as { chave: string; rotulo: string }[];
 
   return (
     <div className="controls">
       <div className="controls-in">
-        <div className="mode-switch" role="group" aria-label="Modo de exibição">
-          {Object.entries(MODES).map(([chave, rotulo]) => (
+        {/* Escopo: as duas populações de filme */}
+        <div className="mode-switch" role="group" aria-label="Escopo">
+          {(Object.keys(SCOPES) as ScopeKey[]).map((k) => (
             <Link
-              key={chave}
-              href={href({ mode: chave === "browse" ? "" : chave })}
-              aria-current={atual.mode === chave ? "true" : undefined}
+              key={k}
+              href={
+                k === "archive"
+                  ? pathname
+                  : `${pathname}?scope=tmdb`
+              }
+              aria-current={scope === k ? "true" : undefined}
               scroll={false}
             >
-              {rotulo}
+              {SCOPES[k]}
             </Link>
           ))}
         </div>
+
+        {modes && (
+          <div className="mode-switch" role="group" aria-label="Modo">
+            {Object.entries(modes).map(([k, rotulo]) => (
+              <Link
+                key={k}
+                href={href({ mode: k === "browse" ? "" : k })}
+                aria-current={atual.mode === k ? "true" : undefined}
+                scroll={false}
+              >
+                {rotulo}
+              </Link>
+            ))}
+          </div>
+        )}
 
         <div className="field">
           <label htmlFor="f-country">País / região</label>
@@ -84,8 +130,8 @@ export function Filters({ countries, decades, movements }: Props) {
             >
               <option value="">Todos os países</option>
               {countries.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+                <option key={c.value} value={c.value}>
+                  {c.label}
                 </option>
               ))}
             </select>
@@ -102,43 +148,45 @@ export function Filters({ countries, decades, movements }: Props) {
             >
               <option value="">Todas as décadas</option>
               {decades.map((d) => (
-                <option key={d} value={String(d)}>
-                  Anos {d}
+                <option key={d.value} value={d.value}>
+                  {d.label}
                 </option>
               ))}
             </select>
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="f-movement">Escola</label>
-          <div className="sel">
-            <select
-              id="f-movement"
-              value={atual.movement}
-              onChange={(e) => mudar("movement", e.target.value)}
-            >
-              <option value="">Todas as escolas</option>
-              {movements.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
+        {movements && (
+          <div className="field">
+            <label htmlFor="f-movement">Escola</label>
+            <div className="sel">
+              <select
+                id="f-movement"
+                value={atual.movement}
+                onChange={(e) => mudar("movement", e.target.value)}
+              >
+                <option value="">Todas as escolas</option>
+                {movements.map((m) => (
+                  <option key={m.value} value={m.value}>
+                    {m.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="field">
           <label htmlFor="f-sort">Ordenar por</label>
           <div className="sel">
             <select
               id="f-sort"
-              value={atual.sort}
+              value={atual.sort || Object.keys(sorts)[0]}
               disabled={rankeando}
               onChange={(e) => mudar("sort", e.target.value)}
             >
-              {Object.entries(SORTS).map(([chave, rotulo]) => (
-                <option key={chave} value={chave}>
+              {Object.entries(sorts).map(([k, rotulo]) => (
+                <option key={k} value={k}>
                   {rotulo}
                 </option>
               ))}

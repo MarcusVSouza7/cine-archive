@@ -139,7 +139,7 @@ export default async function PerfilPublico({ params }: Props) {
                   <div key={e.id}>
                     <Poster
                       film={e.film}
-                      movement={byMovement.get(e.film.movementId)}
+                      movement={e.film.movementId ? byMovement.get(e.film.movementId) : undefined}
                       cat={cats.get(e.film.id)}
                     />
                   </div>
@@ -176,7 +176,7 @@ export default async function PerfilPublico({ params }: Props) {
                     <Link href={`/filmes/${e.film.id}`} className="diary-poster">
                       <Poster
                         film={e.film}
-                        movement={byMovement.get(e.film.movementId)}
+                        movement={e.film.movementId ? byMovement.get(e.film.movementId) : undefined}
                         cat={cats.get(e.film.id)}
                         sizes="72px"
                       />
