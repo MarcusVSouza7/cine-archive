@@ -167,6 +167,8 @@ npm run tmdb:backfill
 
 ## Ligar o Supabase e o TMDb
 
+> Passo a passo com todos os links e valores de preenchimento: **[`docs/SETUP.md`](docs/SETUP.md)**. O resumo abaixo serve de referência rápida.
+
 A aplicação roda sem nada disso — lê o acervo dos JSON e mostra na tela o que está desligado. Os passos abaixo acendem o resto.
 
 **1. Projeto e credenciais.** Crie um projeto em supabase.com. Em *Project Settings → API*, copie a URL e a chave `anon` para `.env.local`:
