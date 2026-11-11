@@ -1,3 +1,22 @@
+# dependencias e build
+node_modules/
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# ambiente — nunca comitar credenciais
+.env
+.env*.local
+
+# relatorio do backfill do TMDb (artefato local)
+data/tmdb-revisao.json
+
+# plataforma
+.vercel/
+
+# sistema operacional e editores
 Thumbs.db
 desktop.ini
 .DS_Store

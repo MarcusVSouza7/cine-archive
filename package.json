@@ -1,0 +1,30 @@
+{
+  "name": "cine-archive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arquivo de cinema de curadoria: obras organizadas por escolas cinematograficas.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "seed:gen": "node scripts/generate-seed.mjs",
+    "tmdb:backfill": "node scripts/backfill-tmdb-ids.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}
