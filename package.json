@@ -10,7 +10,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "seed:gen": "node scripts/generate-seed.mjs",
-    "tmdb:backfill": "node scripts/backfill-tmdb-ids.mjs"
+    "tmdb:backfill": "node --env-file-if-exists=.env.local scripts/backfill-tmdb-ids.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
