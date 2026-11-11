@@ -1,0 +1,1069 @@
+<title>Cine:Archive</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* ============================================================
+   CINE:ARCHIVE — tokens
+   Tema único: a sala de projeção. Tudo pintado explicitamente,
+   para a página não herdar o fundo do host em nenhum estado.
+   ============================================================ */
+:root{
+  --ink:#0E0E10;
+  --ink-2:#141418;
+  --cream:#F4F4F0;
+  --muted:#8F8A80;
+  --faint:#605B54;
+  --rule:rgba(244,244,240,.12);
+  --rule-soft:rgba(244,244,240,.06);
+  --sepia:#A98253;
+  --sepia-soft:rgba(169,130,83,.16);
+
+  --serif:"Cormorant Garamond","Iowan Old Style",Georgia,"Times New Roman",serif;
+  --sans:"Inter",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.5'/></svg>");
+
+  --shell:1240px;
+  --gutter:clamp(18px,4vw,56px);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--cream);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:var(--grain);background-size:160px 160px;opacity:.035;
+}
+.shell{position:relative;z-index:1}
+::selection{background:var(--sepia-soft);color:var(--cream)}
+:focus-visible{outline:1px solid var(--sepia);outline-offset:3px}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+
+/* ---------- escala tipográfica ---------- */
+.display{font-family:var(--serif);font-weight:300;letter-spacing:-.01em;line-height:1.04;text-wrap:balance;margin:0}
+.d-1{font-size:clamp(42px,7.2vw,92px)}
+.d-2{font-size:clamp(29px,4.2vw,50px)}
+.rubric{font-family:var(--sans);font-size:10.5px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin:0}
+.lede{font-family:var(--serif);font-size:clamp(17px,1.5vw,21px);line-height:1.62;color:#CFCBC2;font-weight:300;max-width:60ch;margin:0}
+.body-s{font-size:13.5px;line-height:1.66;color:var(--muted);max-width:65ch;margin:0}
+
+/* ============================================================
+   CABEÇALHO
+   ============================================================ */
+.masthead{
+  position:sticky;top:0;z-index:60;
+  background:rgba(14,14,16,.9);
+  backdrop-filter:blur(14px) saturate(120%);
+  border-bottom:1px solid var(--rule);
+}
+.masthead-in{
+  max-width:var(--shell);margin:0 auto;
+  padding-inline:var(--gutter);padding-block:15px;
+  display:flex;align-items:baseline;gap:clamp(18px,4vw,48px);
+}
+.wordmark{font-family:var(--serif);font-size:21px;font-weight:500;letter-spacing:.055em;white-space:nowrap}
+.wordmark em{font-style:normal;color:var(--sepia)}
+.nav{display:flex;gap:clamp(14px,2.2vw,28px);margin-left:auto;align-items:baseline}
+.nav a{font-size:11.5px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-block:3px;border-bottom:1px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap}
+.nav a:hover,.nav a:focus-visible{color:var(--cream);border-bottom-color:var(--sepia)}
+.search-open{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;transition:color .2s;white-space:nowrap}
+.search-open:hover{color:var(--cream)}
+.search-open svg{width:14px;height:14px;display:block}
+.search-open kbd{font-family:var(--sans);font-size:9.5px;letter-spacing:.08em;color:var(--faint);border:1px solid var(--rule);border-radius:2px;padding:1px 4px}
+@media(max-width:760px){
+  .masthead-in{flex-wrap:wrap;row-gap:0}
+  .nav{order:3;margin-left:0;width:100%;overflow-x:auto;padding-top:11px;border-top:1px solid var(--rule-soft)}
+  .search-open{margin-left:auto}
+  .search-open kbd{display:none}
+}
+
+/* ============================================================
+   ESTRUTURA DE SEÇÃO — rubrica à esquerda, conteúdo à direita
+   ============================================================ */
+.band{border-top:1px solid var(--rule)}
+.band-in{
+  max-width:var(--shell);margin:0 auto;
+  padding-inline:var(--gutter);padding-block:clamp(44px,6vw,80px);
+  display:grid;grid-template-columns:132px minmax(0,1fr);gap:clamp(22px,4vw,56px);
+}
+.band-head{display:flex;flex-direction:column;gap:9px;align-self:start;position:sticky;top:84px}
+.band-head .count{font-size:11px;color:var(--faint);letter-spacing:.1em;font-variant-numeric:tabular-nums}
+@media(max-width:880px){
+  .band-in{grid-template-columns:1fr;gap:20px}
+  .band-head{position:static;flex-direction:row;align-items:baseline;gap:14px;flex-wrap:wrap}
+}
+.stack{display:flex;flex-direction:column;gap:clamp(20px,3vw,32px);min-width:0}
+
+/* ============================================================
+   ABERTURA
+   ============================================================ */
+.opener{
+  max-width:var(--shell);margin:0 auto;
+  padding-inline:var(--gutter);padding-block:clamp(48px,7.5vw,96px) clamp(34px,4.5vw,58px);
+  display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:clamp(26px,5vw,64px);align-items:end;
+}
+@media(max-width:880px){.opener{grid-template-columns:1fr;align-items:start}}
+.opener h1 em{font-style:italic;color:var(--sepia);font-weight:400}
+.opener-meta{display:flex;flex-direction:column;gap:16px;padding-bottom:5px}
+.ledger{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:12px;border-top:1px solid var(--rule);padding-top:14px;margin:0}
+.ledger dt{color:var(--faint);letter-spacing:.1em;text-transform:uppercase;font-size:9.5px;padding-top:4px}
+.ledger dd{margin:0;color:#CFCBC2;font-family:var(--serif);font-size:15px;font-variant-numeric:tabular-nums}
+.rule-caption{max-width:var(--shell);margin:0 auto;padding-inline:var(--gutter)}
+.rule-caption div{border-top:1px solid var(--rule);padding-top:10px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between}
+
+/* ============================================================
+   PLACAS — pôsteres tipográficos gerados em CSS
+   ============================================================ */
+.plate{
+  position:relative;aspect-ratio:2/3;max-width:100%;overflow:hidden;
+  background:
+    radial-gradient(120% 85% at 50% 0%,rgba(244,244,240,.07),transparent 62%),
+    linear-gradient(168deg,hsl(var(--h,40) var(--s,12%) 19%),hsl(var(--h,40) var(--s,12%) 8%));
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:clamp(10px,1.4vw,16px);isolation:isolate;
+}
+.plate::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--grain);background-size:140px 140px;opacity:.08;mix-blend-mode:overlay}
+.plate .frame{position:absolute;inset:7px;border:1px solid rgba(244,244,240,.14);pointer-events:none}
+.plate-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;position:relative;z-index:2}
+.plate-cat{font-size:9px;letter-spacing:.14em;color:rgba(244,244,240,.42);font-variant-numeric:tabular-nums}
+.plate-title{font-family:var(--serif);font-weight:400;line-height:1.08;color:var(--cream);font-size:clamp(16px,1.6vw,22px);position:relative;z-index:2;margin:auto 0 0;padding-right:4px;text-wrap:balance}
+.plate-foot{position:relative;z-index:2;margin-top:10px;border-top:1px solid rgba(244,244,240,.16);padding-top:7px;display:flex;justify-content:space-between;gap:8px}
+.plate-foot span{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:rgba(244,244,240,.58);font-variant-numeric:tabular-nums}
+.plate-foot .dir{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:64%}
+
+/* ============================================================
+   GRADE
+   ============================================================ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(166px,1fr));gap:clamp(16px,2.2vw,30px) clamp(14px,1.8vw,22px)}
+.film-card{text-align:left;width:100%;display:flex;flex-direction:column;gap:10px;cursor:pointer;min-width:0}
+.film-card .plate{transition:transform .5s cubic-bezier(.2,.7,.2,1),filter .5s}
+.film-card:hover .plate,.film-card:focus-visible .plate{transform:translateY(-4px);filter:brightness(1.14)}
+.film-card .cap h3{font-family:var(--serif);font-size:16.5px;font-weight:400;line-height:1.22;margin:0;color:var(--cream)}
+.film-card .cap p{margin:3px 0 0;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-variant-numeric:tabular-nums}
+
+/* ============================================================
+   LISTA EDITORIAL
+   ============================================================ */
+.ed-list{display:flex;flex-direction:column}
+.ed-row{
+  width:100%;text-align:left;display:grid;
+  grid-template-columns:34px minmax(0,2.3fr) minmax(0,1fr) 50px minmax(0,.85fr) 46px;
+  gap:4px 18px;align-items:baseline;
+  padding-block:17px;border-top:1px solid var(--rule-soft);cursor:pointer;transition:background .25s;
+}
+.ed-row:first-child{border-top:1px solid var(--rule)}
+.ed-row:hover,.ed-row:focus-visible{background:linear-gradient(90deg,rgba(169,130,83,.07),transparent 70%)}
+.ed-idx{font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums;letter-spacing:.06em}
+.ed-main{min-width:0}
+.ed-main h3{font-family:var(--serif);font-size:21px;font-weight:400;line-height:1.16;margin:0;color:var(--cream)}
+.ed-main h3 .orig{font-style:italic;color:var(--muted);font-size:13.5px;margin-left:7px}
+.ed-main p{margin:6px 0 0;font-size:13px;line-height:1.55;color:var(--muted);max-width:62ch}
+.ed-main .mv{display:inline-block;margin-top:8px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sepia)}
+.ed-meta{font-size:12px;color:#B9B4AA;font-variant-numeric:tabular-nums}
+.ed-meta.dim{color:var(--muted)}
+.ed-score{font-family:var(--serif);font-size:19px;color:var(--cream);font-variant-numeric:tabular-nums;text-align:right}
+@media(max-width:860px){
+  .ed-row{grid-template-columns:26px minmax(0,1fr) 44px;gap:3px 12px}
+  .ed-meta.dir{grid-column:2;font-size:11.5px}
+  .ed-meta.yr,.ed-meta.ct{display:none}
+  .ed-score{grid-row:1;grid-column:3}
+}
+
+/* ============================================================
+   BARRA DE FILTROS
+   ============================================================ */
+.controls{
+  position:sticky;top:57px;z-index:40;
+  background:rgba(14,14,16,.95);backdrop-filter:blur(14px);
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  margin-bottom:clamp(20px,3vw,32px);
+}
+.controls-in{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;padding-block:13px}
+.mode-switch{display:flex;border:1px solid var(--rule)}
+.mode-switch button{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:7px 11px;border-right:1px solid var(--rule);transition:background .2s,color .2s}
+.mode-switch button:last-child{border-right:0}
+.mode-switch button[aria-pressed="true"]{background:var(--sepia-soft);color:var(--cream)}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.sel{position:relative;display:flex;align-items:center}
+.sel select{
+  appearance:none;-webkit-appearance:none;background:transparent;border:0;
+  border-bottom:1px solid var(--rule);color:var(--cream);
+  font-family:var(--serif);font-size:16px;padding:1px 22px 4px 0;min-width:112px;cursor:pointer;transition:border-color .2s;
+}
+.sel select:hover{border-bottom-color:var(--sepia)}
+.sel::after{content:"";position:absolute;right:5px;top:6px;width:5px;height:5px;border-right:1px solid var(--muted);border-bottom:1px solid var(--muted);transform:rotate(45deg);pointer-events:none}
+.sel select option{background:var(--ink-2);color:var(--cream);font-family:var(--sans);font-size:13px}
+.view-toggle{display:flex;margin-left:auto;align-items:flex-end}
+.view-toggle button{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);padding:5px 10px;border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.view-toggle button[aria-pressed="true"]{color:var(--cream);border-bottom-color:var(--sepia)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding-bottom:13px}
+.chips:empty{display:none}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.11em;text-transform:uppercase;color:#CFCBC2;border:1px solid var(--rule);padding:4px 8px}
+.chip button{color:var(--muted);font-size:13px;line-height:1}
+.chip button:hover{color:var(--sepia)}
+.chips .clear{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--faint);border-bottom:1px solid var(--rule)}
+.chips .clear:hover{color:var(--sepia)}
+@media(max-width:760px){
+  .controls{top:0}
+  .view-toggle{margin-left:0;width:100%;border-top:1px solid var(--rule-soft);padding-top:9px}
+  .sel select{min-width:0;width:100%}
+  .field{flex:1 1 130px}
+  .mode-switch{width:100%}
+  .mode-switch button{flex:1}
+}
+
+/* ============================================================
+   RANKINGS AGRUPADOS
+   ============================================================ */
+.rank-group{border-top:1px solid var(--rule);padding-block:24px 8px;display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 28px}
+.rank-group:first-child{border-top:0;padding-top:2px}
+.rank-head{display:flex;flex-direction:column;gap:4px;align-self:start}
+.rank-head .t{font-family:var(--serif);font-size:30px;line-height:1;color:var(--cream);font-variant-numeric:tabular-nums}
+.rank-head .s{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.rank-list{display:flex;flex-direction:column}
+.rank-row{width:100%;text-align:left;display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:14px;align-items:baseline;padding-block:11px;border-top:1px solid var(--rule-soft);cursor:pointer;transition:background .25s}
+.rank-row:first-child{border-top:0}
+.rank-row:hover{background:linear-gradient(90deg,rgba(169,130,83,.07),transparent 70%)}
+.rank-row .pos{font-size:11px;color:var(--sepia);font-variant-numeric:tabular-nums}
+.rank-row .ti{font-family:var(--serif);font-size:18px;color:var(--cream);line-height:1.2;min-width:0}
+.rank-row .ti small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+.rank-row .sc{font-family:var(--serif);font-size:17px;color:#CFCBC2;font-variant-numeric:tabular-nums}
+@media(max-width:860px){.rank-group{grid-template-columns:1fr}}
+
+/* ============================================================
+   ESCOLAS
+   ============================================================ */
+.schools{display:grid;grid-template-columns:repeat(auto-fit,minmax(324px,1fr));gap:1px;background:var(--rule)}
+.school{background:var(--ink);padding:clamp(20px,2.4vw,30px);display:flex;flex-direction:column;gap:14px;position:relative;transition:background .35s}
+.school:hover{background:var(--ink-2)}
+.school .strip{position:absolute;left:0;top:0;bottom:0;width:2px;background:hsl(var(--h) var(--s) 44%);opacity:.5}
+.school-top{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
+.school h3{font-family:var(--serif);font-size:clamp(23px,2.2vw,28px);font-weight:400;line-height:1.1;margin:0;color:var(--cream)}
+.school h3 .loc{display:block;font-family:var(--sans);font-size:9.5px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--sepia);margin-bottom:8px}
+.school-top .yrs{font-size:11px;letter-spacing:.1em;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.school .abstract{font-size:13.5px;line-height:1.64;color:var(--muted);margin:0}
+.school dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;border-top:1px solid var(--rule-soft);padding-top:13px}
+.school dt{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding-top:4px}
+.school dd{margin:0;font-family:var(--serif);font-size:14.5px;line-height:1.4;color:#CFCBC2}
+.school .essentials{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:auto;padding-top:4px}
+.school .essentials button{font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:2px;transition:color .2s,border-color .2s;text-align:left}
+.school .essentials button:hover{color:var(--cream);border-bottom-color:var(--sepia)}
+.school .go{margin-top:6px;align-self:start;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--sepia);display:inline-flex;gap:9px;align-items:center}
+.school .go::after{content:"";width:18px;height:1px;background:var(--sepia);transition:width .3s}
+.school .go:hover::after{width:32px}
+
+/* ============================================================
+   FICHA DO FILME
+   ============================================================ */
+.scrim{position:fixed;inset:0;z-index:90;background:rgba(8,8,9,.8);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:clamp(12px,3vw,40px);overflow-y:auto}
+.scrim[hidden]{display:none!important}
+.sheet{width:min(980px,100%);background:var(--ink-2);border:1px solid var(--rule);animation:rise .4s cubic-bezier(.2,.7,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.sheet-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 18px;border-bottom:1px solid var(--rule)}
+.sheet-bar .cat{font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--faint);font-variant-numeric:tabular-nums}
+.sheet-bar .x{font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);display:flex;gap:9px;align-items:center}
+.sheet-bar .x:hover{color:var(--cream)}
+.sheet-body{display:grid;grid-template-columns:268px minmax(0,1fr);gap:clamp(20px,3vw,38px);padding:clamp(20px,3vw,34px)}
+@media(max-width:780px){.sheet-body{grid-template-columns:1fr}.sheet-body>.plate{max-width:210px}}
+.sheet-main{display:flex;flex-direction:column;gap:20px;min-width:0}
+.sheet-main h2{font-family:var(--serif);font-size:clamp(28px,3.6vw,42px);font-weight:300;line-height:1.06;margin:0;color:var(--cream);text-wrap:balance}
+.sheet-main .orig-t{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--muted);margin:8px 0 0}
+.tech{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:16px 20px;border-block:1px solid var(--rule);padding-block:17px}
+.tech div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.tech .k{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint)}
+.tech .v{font-family:var(--serif);font-size:16px;color:var(--cream);line-height:1.25;font-variant-numeric:tabular-nums}
+.synopsis{font-family:var(--serif);font-size:17.5px;line-height:1.62;color:#D6D2C9;font-weight:300;margin:0;max-width:60ch}
+.block-t{font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--faint);margin:0 0 11px}
+.where{display:flex;flex-wrap:wrap;gap:7px}
+.where span{font-size:11.5px;color:#CFCBC2;border:1px solid var(--rule);padding:5px 9px}
+.where span.archive{border-color:var(--sepia-soft);color:var(--sepia)}
+.links{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--rule);padding-top:16px}
+.links button{text-align:left;font-family:var(--serif);font-size:16px;color:#CFCBC2;display:flex;gap:12px;align-items:baseline;transition:color .2s}
+.links button:hover{color:var(--sepia)}
+.links button i{font-family:var(--sans);font-style:normal;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);min-width:96px;flex-shrink:0}
+.score-pair{display:flex;gap:26px;flex-wrap:wrap}
+.score-pair div{display:flex;flex-direction:column;gap:4px}
+.score-pair .n{font-family:var(--serif);font-size:30px;line-height:1;color:var(--cream);font-variant-numeric:tabular-nums}
+.score-pair .n sup{font-size:11px;color:var(--faint);font-family:var(--sans);margin-left:3px}
+.score-pair .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+
+/* ============================================================
+   BUSCA
+   ============================================================ */
+.find{position:fixed;inset:0;z-index:95;background:rgba(10,10,11,.92);backdrop-filter:blur(10px);padding:clamp(16px,8vh,104px) var(--gutter)}
+.find[hidden]{display:none!important}
+.find-in{max-width:720px;margin:0 auto}
+.find input{width:100%;background:transparent;border:0;border-bottom:1px solid var(--rule);color:var(--cream);font-family:var(--serif);font-weight:300;font-size:clamp(25px,4.4vw,40px);padding:0 0 14px;outline:none}
+.find input::placeholder{color:var(--faint)}
+.find input:focus{border-bottom-color:var(--sepia)}
+.find .hint{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--faint);margin:12px 0 0}
+.find-out{margin-top:20px;display:flex;flex-direction:column;max-height:46vh;overflow-y:auto}
+.find-out button{text-align:left;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:baseline;padding-block:11px;border-top:1px solid var(--rule-soft)}
+.find-out button:hover{background:linear-gradient(90deg,rgba(169,130,83,.08),transparent)}
+.find-out .t{font-family:var(--serif);font-size:19px;color:var(--cream);min-width:0}
+.find-out .t small{display:block;font-family:var(--sans);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-top:3px}
+.find-out .k{font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--sepia);white-space:nowrap}
+
+/* ============================================================
+   SOBRE / ESQUEMA DE DADOS
+   ============================================================ */
+.about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(236px,1fr));gap:clamp(22px,3vw,40px)}
+.about-grid h3{font-family:var(--serif);font-size:19px;font-weight:400;margin:0 0 9px;color:var(--cream)}
+pre{margin:0;overflow-x:auto;background:var(--ink-2);border:1px solid var(--rule);padding:18px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:11.5px;line-height:1.72;color:#BFBAB0}
+pre b{color:var(--sepia);font-weight:400}
+pre u{color:#9AAE9A;text-decoration:none}
+pre i{color:var(--faint)}
+details{border-top:1px solid var(--rule)}
+details summary{cursor:pointer;padding-block:15px;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";font-size:15px;color:var(--sepia)}
+details[open] summary::after{content:"\2013"}
+details summary:hover{color:var(--cream)}
+details .inner{padding-bottom:24px;display:flex;flex-direction:column;gap:14px}
+
+.closer{border-top:1px solid var(--rule);padding-block:32px 44px}
+.closer .in{max-width:var(--shell);margin:0 auto;padding-inline:var(--gutter);display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:baseline}
+.closer p{margin:0;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.empty{padding-block:56px;text-align:center;font-family:var(--serif);font-size:20px;color:var(--muted)}
+.empty button{display:block;margin:14px auto 0;font-family:var(--sans);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--sepia);border-bottom:1px solid var(--sepia-soft)}
+
+@media(prefers-reduced-motion:reduce){
+  .sheet{animation:none}
+  .film-card .plate{transition:none}
+  html{scroll-behavior:auto}
+}
+html{scroll-behavior:smooth}
+</style>
+
+<header class="masthead">
+  <div class="masthead-in">
+    <a href="#top" class="wordmark">Cine<em>:</em>Archive</a>
+    <nav class="nav" aria-label="Seções">
+      <a href="#filmes">Filmes</a>
+      <a href="#escolas">Escolas</a>
+      <a href="#explorar">Explorar</a>
+      <a href="#sobre">Sobre</a>
+    </nav>
+    <button class="search-open" id="btn-find" aria-label="Abrir busca">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+        <circle cx="6.8" cy="6.8" r="4.6"></circle><path d="M10.4 10.4 14 14"></path>
+      </svg>
+      Buscar <kbd>Ctrl K</kbd>
+    </button>
+  </div>
+</header>
+
+<div class="shell" id="top">
+
+  <!-- ====================== ABERTURA ====================== -->
+  <section class="opener">
+    <div>
+      <p class="rubric" style="margin-bottom:20px">Arquivo de curadoria · Edição 11.2026</p>
+      <h1 class="display d-1">Um catálogo do cinema organizado por <em>escolas</em>, não por algoritmo.</h1>
+    </div>
+    <div class="opener-meta">
+      <p class="lede">Trinta e sete obras fundamentais, lidas através das correntes que as produziram — do expressionismo de estúdio ao vídeo granulado do Dogma 95. Cada ficha devolve o filme ao seu movimento.</p>
+      <dl class="ledger">
+        <dt>Obras</dt><dd id="stat-films">37 catalogadas</dd>
+        <dt>Escolas</dt><dd id="stat-schools">8 correntes</dd>
+        <dt>Período</dt><dd>1920 — 2002</dd>
+        <dt>Procedência</dt><dd>8 cinematografias</dd>
+      </dl>
+    </div>
+  </section>
+
+  <div class="rule-caption">
+    <div>
+      <span>Pôsteres compostos tipograficamente no navegador</span>
+      <span>Notas de arquivo — escala curatorial 0–100</span>
+      <span>Conjunto de dados de demonstração</span>
+    </div>
+  </div>
+
+  <!-- ====================== SELEÇÃO ====================== -->
+  <section class="band" id="filmes" style="border-top:0">
+    <div class="band-in">
+      <div class="band-head">
+        <p class="rubric">A seleção</p>
+        <span class="count">Seis entradas</span>
+      </div>
+      <div class="stack">
+        <p class="lede">Os títulos pelos quais um visitante começa: cada um é a porta de entrada mais limpa para a corrente que representa.</p>
+        <div class="grid" id="curated"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== ESCOLAS ====================== -->
+  <section class="band" id="escolas">
+    <div class="band-in">
+      <div class="band-head">
+        <p class="rubric">Escolas</p>
+        <span class="count">Nove correntes</span>
+      </div>
+      <div class="stack">
+        <h2 class="display d-2">Movimentos</h2>
+        <p class="lede">Uma escola não é um gênero: é um conjunto de condições — material, política, econômica — que fez um grupo de diretores filmar de um modo que ninguém filmava antes. Cada verbete resume essas condições e aponta as obras onde elas aparecem com mais nitidez.</p>
+        <div class="schools" id="schools"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== EXPLORAR ====================== -->
+  <section class="band" id="explorar">
+    <div class="band-in">
+      <div class="band-head">
+        <p class="rubric">Explorar</p>
+        <span class="count" id="result-count">37 obras</span>
+      </div>
+      <div class="stack">
+        <h2 class="display d-2">O explorador</h2>
+        <p class="lede">Filtre por procedência, década e escola. Ou troque para os rankings, que reordenam o acervo pelas melhores notas dentro de cada década e de cada cinematografia.</p>
+
+        <div class="controls">
+          <div class="controls-in">
+            <div class="mode-switch" role="group" aria-label="Modo de exibição">
+              <button type="button" id="mode-browse" data-mode="browse" aria-pressed="true">Acervo</button>
+              <button type="button" id="mode-decade" data-mode="decade" aria-pressed="false">Top por década</button>
+              <button type="button" id="mode-country" data-mode="country" aria-pressed="false">Top por país</button>
+            </div>
+
+            <div class="field">
+              <label for="f-country">País / região</label>
+              <div class="sel"><select id="f-country"></select></div>
+            </div>
+            <div class="field">
+              <label for="f-decade">Década</label>
+              <div class="sel"><select id="f-decade"></select></div>
+            </div>
+            <div class="field">
+              <label for="f-movement">Escola</label>
+              <div class="sel"><select id="f-movement"></select></div>
+            </div>
+            <div class="field">
+              <label for="f-sort">Ordenar por</label>
+              <div class="sel"><select id="f-sort"></select></div>
+            </div>
+
+            <div class="view-toggle" role="group" aria-label="Visualização">
+              <button type="button" id="view-grid" data-view="grid" aria-pressed="true">Grade</button>
+              <button type="button" id="view-list" data-view="list" aria-pressed="false">Lista editorial</button>
+            </div>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+
+        <div id="results"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== SOBRE ====================== -->
+  <section class="band" id="sobre">
+    <div class="band-in">
+      <div class="band-head">
+        <p class="rubric">Sobre</p>
+        <span class="count">Nota editorial</span>
+      </div>
+      <div class="stack">
+        <h2 class="display d-2">Como este arquivo é feito</h2>
+        <div class="about-grid">
+          <div>
+            <h3>Critério</h3>
+            <p class="body-s">Entra no acervo a obra que ajuda a explicar uma corrente — não necessariamente a mais vista. A nota de arquivo pesa consenso crítico acumulado; a relevância histórica mede o quanto o filme alterou o que vinha depois dele. As duas são escalas curatoriais, mantidas separadas de propósito: <em>Vidas Secas</em> e <em>O Poderoso Chefão</em> não competem na mesma coluna.</p>
+          </div>
+          <div>
+            <h3>Pôsteres</h3>
+            <p class="body-s">Nenhuma imagem é carregada de fora. Cada placa é composta no navegador — título original na serifa do arquivo, número de catálogo, diretor e ano sobre uma tinta derivada da escola do filme. Cartazes licenciados entram depois, nos mesmos enquadramentos 2:3.</p>
+          </div>
+          <div>
+            <h3>Dados</h3>
+            <p class="body-s">Fichas técnicas e sinopses são verificáveis. Notas, relevância e disponibilidade de streaming são valores de demonstração deste protótipo — a estrutura está pronta para receber um acervo real pelo esquema abaixo.</p>
+          </div>
+        </div>
+
+        <details>
+          <summary>Arquitetura de informação — esquema JSON</summary>
+          <div class="inner">
+            <p class="body-s">Duas coleções e uma tabela de ligação. <code>movement</code> é a chave estrangeira que sustenta a seção de Escolas, o filtro do explorador e o bloco “conexões” da ficha — um único campo alimenta as três.</p>
+            <pre id="schema"></pre>
+          </div>
+        </details>
+        <details>
+          <summary>Registro de exemplo — o filme como ele chega do banco</summary>
+          <div class="inner"><pre id="sample"></pre></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer class="closer">
+    <div class="in">
+      <p>Cine:Archive — protótipo de curadoria</p>
+      <p>Conceito visual e dados de demonstração · 2026</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ====================== FICHA ====================== -->
+<div class="scrim" id="scrim" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<!-- ====================== BUSCA ====================== -->
+<div class="find" id="find" hidden role="dialog" aria-modal="true" aria-label="Buscar no arquivo">
+  <div class="find-in">
+    <input id="find-input" type="search" placeholder="Título, diretor ou escola" autocomplete="off" spellcheck="false">
+    <p class="hint">Enter abre a primeira ficha · Esc fecha</p>
+    <div class="find-out" id="find-out"></div>
+  </div>
+</div>
+
+<script type="application/json" id="db-movements">
+[
+ {"id":"expressionismo","name":"Expressionismo Alemão","region":"Alemanha","years":"1919–1931","hue":222,"sat":"14%",
+  "abstract":"Nascido dos estúdios da UFA numa Alemanha arruinada pela guerra, o movimento abandonou a cenografia realista: cidades inteiras foram pintadas em telões oblíquos, com sombras desenhadas no chão. O mundo interior do personagem passou a ser construído em madeira e tinta.",
+  "aesthetic":"Perspectiva distorcida, claro-escuro pintado, maquiagem gráfica, interpretação coreografada","keyDirectors":["F. W. Murnau","Fritz Lang","Robert Wiene"]},
+ {"id":"neorrealismo","name":"Neorrealismo Italiano","region":"Itália","years":"1943–1952","hue":32,"sat":"14%",
+  "abstract":"Com os estúdios de Cinecittà ocupados e sem película disponível, os italianos filmaram na rua, com atores não profissionais e luz natural. A escassez virou método: o cinema passou a filmar quem antes só aparecia ao fundo do quadro.",
+  "aesthetic":"Locação real, elenco não profissional, dramaturgia do cotidiano, final sem resolução","keyDirectors":["Vittorio De Sica","Roberto Rossellini","Luchino Visconti"]},
+ {"id":"nouvelle-vague","name":"Nouvelle Vague","region":"França","years":"1958–1968","hue":200,"sat":"12%",
+  "abstract":"Críticos dos Cahiers du Cinéma trocaram a máquina de escrever pela câmera. Equipamento leve e película sensível permitiram filmar Paris sem permissão, improvisando diálogo e montando contra as regras — o corte seco passou a ser assinatura, não erro.",
+  "aesthetic":"Jump cut, câmera na mão, som direto, citação cinéfila, atores olhando para a lente","keyDirectors":["Jean-Luc Godard","François Truffaut","Agnès Varda"]},
+ {"id":"cinema-novo","name":"Cinema Novo","region":"Brasil","years":"1955–1972","hue":24,"sat":"18%",
+  "abstract":"“Uma câmera na mão e uma ideia na cabeça.” O movimento assumiu a precariedade como estética e programa político, filmando o sertão e a favela para explicar a formação do país. Depois de 1964, a alegoria tornou-se a forma de seguir falando.",
+  "aesthetic":"Luz dura do sertão, câmera inquieta, montagem alegórica, som áspero e canto popular","keyDirectors":["Glauber Rocha","Nelson Pereira dos Santos","Ruy Guerra"]},
+ {"id":"japao-ouro","name":"Idade de Ouro Japonesa","region":"Japão","years":"1950–1962","hue":46,"sat":"12%",
+  "abstract":"A reconstrução do pós-guerra financiou o período mais fértil dos estúdios japoneses. Três gramáticas incompatíveis conviveram: a geometria imóvel de Ozu, o movimento pictórico de Mizoguchi e a ação em múltiplas câmeras de Kurosawa — que abriu o cinema japonês ao Ocidente em Veneza.",
+  "aesthetic":"Câmera à altura do tatame, planos-sequência pintados, decupagem climática, elipse narrativa","keyDirectors":["Akira Kurosawa","Yasujirō Ozu","Kenji Mizoguchi"]},
+ {"id":"new-hollywood","name":"New Hollywood","region":"Estados Unidos","years":"1967–1980","hue":12,"sat":"14%",
+  "abstract":"O colapso do Código Hays e a falência dos grandes estúdios entregaram o orçamento a uma geração formada em escola de cinema. Por pouco mais de uma década, o filme comercial americano teve protagonistas moralmente indefensáveis e finais sem absolvição.",
+  "aesthetic":"Zoom e teleobjetiva, som sobreposto, película granulada, locação urbana, anti-herói","keyDirectors":["Martin Scorsese","Robert Altman","Francis Ford Coppola"]},
+ {"id":"taiwan","name":"Novo Cinema Taiwanês","region":"Taiwan","years":"1982–2000","hue":190,"sat":"10%",
+  "abstract":"Financiado inicialmente pelo estúdio estatal, um grupo de diretores passou a filmar a história recente de Taiwan — o Terror Branco, a migração para a cidade — em planos longos e fixos. A duração do plano é o argumento: o tempo histórico precisa ser sentido, não resumido.",
+  "aesthetic":"Plano longo e fixo, enquadramento por portas e janelas, som ambiente, elipse de anos","keyDirectors":["Hou Hsiao-hsien","Edward Yang","Tsai Ming-liang"]},
+ {"id":"j-horror","name":"J-Horror","region":"Japão","years":"1998–2005","hue":172,"sat":"12%",
+  "abstract":"O terror japonês do fim dos anos 1990 trocou o monstro pelo meio de transmissão: a fita VHS, a linha telefônica, o modem. Herdeiro do fantasma vingativo do teatro kaidan, filmou a imagem de baixa resolução como lugar onde o morto se hospeda.",
+  "aesthetic":"Paleta dessaturada, enquadramento vazio, aparição na periferia do quadro, silêncio e ruído de vídeo","keyDirectors":["Hideo Nakata","Kiyoshi Kurosawa","Takashi Shimizu"]},
+ {"id":"dogma95","name":"Dogma 95","region":"Dinamarca","years":"1995–2002","hue":0,"sat":"0%",
+  "abstract":"Quatro diretores dinamarqueses assinaram um “voto de castidade”: locação, som direto, câmera na mão, nenhuma luz artificial, nenhum crédito de direção. O manifesto era parte provocação, parte purgação — e a câmera digital barata o tornou exequível.",
+  "aesthetic":"Vídeo digital granulado, câmera trêmula, luz disponível, atuação em registro de desconforto","keyDirectors":["Lars von Trier","Thomas Vinterberg","Lone Scherfig"]}
+]
+</script>
+
+<script type="application/json" id="db-films">
+[
+ {"id":"caligari-1920","title":"O Gabinete do Dr. Caligari","originalTitle":"Das Cabinet des Dr. Caligari","year":1920,"country":"Alemanha","director":"Robert Wiene","runtime":77,"movement":"expressionismo","rating":94,"relevance":98,"synopsis":"Um feirante hipnotizador e seu sonâmbulo atravessam uma cidade de telões pintados — e o relato de quem narra a história se revela parte do delírio.","watch":["Domínio público","Internet Archive"],"archival":true},
+ {"id":"nosferatu-1922","title":"Nosferatu","originalTitle":"Nosferatu, eine Symphonie des Grauens","year":1922,"country":"Alemanha","director":"F. W. Murnau","runtime":94,"movement":"expressionismo","rating":95,"relevance":96,"synopsis":"Adaptação não autorizada de Drácula que levou o vampiro para fora do estúdio: a sombra do conde sobe a escada numa casa real, e o horror passa a ter endereço.","watch":["Domínio público","MUBI"],"archival":true},
+ {"id":"letzte-mann-1924","title":"A Última Gargalhada","originalTitle":"Der letzte Mann","year":1924,"country":"Alemanha","director":"F. W. Murnau","runtime":90,"movement":"expressionismo","rating":92,"relevance":94,"synopsis":"Um porteiro de hotel rebaixado à lavanderia perde o uniforme que lhe dava lugar no mundo. Contado quase sem intertítulos, com a câmera solta pela primeira vez.","watch":["Criterion Channel"],"archival":true},
+ {"id":"metropolis-1927","title":"Metropolis","originalTitle":"Metropolis","year":1927,"country":"Alemanha","director":"Fritz Lang","runtime":153,"movement":"expressionismo","rating":97,"relevance":99,"synopsis":"Na cidade vertical, os que projetam vivem acima dos que movem as máquinas. Uma autômata construída à semelhança de uma operária é lançada para incendiar a revolta.","watch":["MUBI","Criterion Channel"],"archival":false},
+ {"id":"m-1931","title":"M, o Vampiro de Düsseldorf","originalTitle":"M – Eine Stadt sucht einen Mörder","year":1931,"country":"Alemanha","director":"Fritz Lang","runtime":117,"movement":"expressionismo","rating":98,"relevance":95,"synopsis":"A polícia e o crime organizado caçam o mesmo assassino de crianças, cada um por seu motivo. Primeiro filme sonoro de Lang: o assobio identifica antes que a imagem mostre.","watch":["Criterion Channel","MUBI"],"archival":false},
+
+ {"id":"roma-1945","title":"Roma, Cidade Aberta","originalTitle":"Roma, città aperta","year":1945,"country":"Itália","director":"Roberto Rossellini","runtime":103,"movement":"neorrealismo","rating":95,"relevance":97,"synopsis":"Filmado em Roma meses após a retirada alemã, com sobras de película. A resistência vista de dentro dos apartamentos, onde a decisão política é tomada na cozinha.","watch":["Criterion Channel","Prime Video"],"archival":false},
+ {"id":"ladri-1948","title":"Ladrões de Bicicleta","originalTitle":"Ladri di biciclette","year":1948,"country":"Itália","director":"Vittorio De Sica","runtime":89,"movement":"neorrealismo","rating":98,"relevance":98,"synopsis":"Um operário recém-contratado tem a bicicleta roubada e percorre Roma com o filho para encontrá-la. Sem ela, não há emprego; sem emprego, não há nada.","watch":["Criterion Channel","MUBI","Kanopy"],"archival":false},
+ {"id":"terra-trema-1948","title":"A Terra Treme","originalTitle":"La terra trema","year":1948,"country":"Itália","director":"Luchino Visconti","runtime":160,"movement":"neorrealismo","rating":90,"relevance":88,"synopsis":"Uma família de pescadores sicilianos tenta romper com os atravessadores e compra o próprio barco. Falado em dialeto, interpretado pelos próprios moradores de Aci Trezza.","watch":["Criterion Channel"],"archival":false},
+ {"id":"umberto-1952","title":"Umberto D.","originalTitle":"Umberto D.","year":1952,"country":"Itália","director":"Vittorio De Sica","runtime":89,"movement":"neorrealismo","rating":94,"relevance":86,"synopsis":"Um funcionário público aposentado não consegue pagar o aluguel do quarto onde mora com seu cachorro. O filme mais seco do movimento e o favorito de De Sica.","watch":["Criterion Channel"],"archival":false},
+
+ {"id":"400-coups-1959","title":"Os Incompreendidos","originalTitle":"Les quatre cents coups","year":1959,"country":"França","director":"François Truffaut","runtime":99,"movement":"nouvelle-vague","rating":97,"relevance":96,"synopsis":"Antoine Doinel foge da escola, da casa dos pais e por fim do reformatório, até alcançar o mar que nunca tinha visto — e olhar para a câmera.","watch":["Criterion Channel","MUBI"],"archival":false},
+ {"id":"bout-souffle-1960","title":"O Acossado","originalTitle":"À bout de souffle","year":1960,"country":"França","director":"Jean-Luc Godard","runtime":90,"movement":"nouvelle-vague","rating":96,"relevance":99,"synopsis":"Um pequeno ladrão de carros que imita Bogart mata um policial e tenta convencer uma estudante americana a fugir com ele. O jump cut entra na gramática do cinema.","watch":["Criterion Channel","MUBI"],"archival":false},
+ {"id":"cleo-1962","title":"Cleo de 5 às 7","originalTitle":"Cléo de 5 à 7","year":1962,"country":"França","director":"Agnès Varda","runtime":90,"movement":"nouvelle-vague","rating":93,"relevance":91,"synopsis":"Noventa minutos quase em tempo real: uma cantora atravessa Paris esperando um resultado de biópsia e deixa de ser olhada para começar a olhar.","watch":["Criterion Channel","MUBI"],"archival":false},
+ {"id":"pierrot-1965","title":"O Demônio das Onze Horas","originalTitle":"Pierrot le fou","year":1965,"country":"França","director":"Jean-Luc Godard","runtime":110,"movement":"nouvelle-vague","rating":90,"relevance":87,"synopsis":"Um homem abandona a vida burguesa em Paris e desce para o Mediterrâneo com a ex-amante e os credores dela atrás. Cor saturada, interrupções em bloco, dinamite.","watch":["Criterion Channel"],"archival":false},
+
+ {"id":"rio-40-1955","title":"Rio, 40 Graus","originalTitle":"Rio, 40 Graus","year":1955,"country":"Brasil","director":"Nelson Pereira dos Santos","runtime":100,"movement":"cinema-novo","rating":86,"relevance":90,"synopsis":"Um domingo na vida de cinco meninos que descem o morro para vender amendoim na cidade. Censurado antes de estrear, é a semente do movimento.","watch":["Cinemateca Brasileira (acervo)","Itaú Cultural Play"],"archival":true},
+ {"id":"vidas-secas-1963","title":"Vidas Secas","originalTitle":"Vidas Secas","year":1963,"country":"Brasil","director":"Nelson Pereira dos Santos","runtime":103,"movement":"cinema-novo","rating":93,"relevance":95,"synopsis":"Fabiano, Sinhá Vitória e os dois filhos atravessam a caatinga em fuga da seca. Da luz branca estourada ao chiado do carro de boi, tudo recusa o conforto.","watch":["Cinemateca Brasileira (acervo)","MUBI"],"archival":true},
+ {"id":"deus-diabo-1964","title":"Deus e o Diabo na Terra do Sol","originalTitle":"Deus e o Diabo na Terra do Sol","year":1964,"country":"Brasil","director":"Glauber Rocha","runtime":125,"movement":"cinema-novo","rating":94,"relevance":97,"synopsis":"Um vaqueiro mata o patrão e segue primeiro um beato, depois um cangaceiro, enquanto um matador contratado encerra os dois ciclos. O sertão vai virar mar.","watch":["MUBI","Itaú Cultural Play"],"archival":false},
+ {"id":"os-fuzis-1964","title":"Os Fuzis","originalTitle":"Os Fuzis","year":1964,"country":"Brasil","director":"Ruy Guerra","runtime":110,"movement":"cinema-novo","rating":87,"relevance":88,"synopsis":"Soldados são enviados para proteger um armazém de alimentos de uma população faminta no sertão de Minas. O rifle como único argumento do Estado.","watch":["Cinemateca Brasileira (acervo)"],"archival":true},
+ {"id":"terra-transe-1967","title":"Terra em Transe","originalTitle":"Terra em Transe","year":1967,"country":"Brasil","director":"Glauber Rocha","runtime":115,"movement":"cinema-novo","rating":91,"relevance":93,"synopsis":"No país imaginário de Eldorado, um poeta oscila entre dois populistas e termina com um fuzil na mão. A alegoria como resposta ao golpe de 1964.","watch":["MUBI"],"archival":false},
+
+ {"id":"bonnie-1967","title":"Bonnie e Clyde","originalTitle":"Bonnie and Clyde","year":1967,"country":"Estados Unidos","director":"Arthur Penn","runtime":111,"movement":"new-hollywood","rating":91,"relevance":96,"synopsis":"Dois assaltantes de banco atravessam o Centro-Oeste na Depressão, filmados com a liberdade formal da Europa e uma morte em câmera lenta que abriu a década.","watch":["Max","Prime Video"],"archival":false},
+ {"id":"godfather-1972","title":"O Poderoso Chefão","originalTitle":"The Godfather","year":1972,"country":"Estados Unidos","director":"Francis Ford Coppola","runtime":175,"movement":"new-hollywood","rating":98,"relevance":98,"synopsis":"A sucessão de uma família siciliana em Nova York, contada em interiores âmbar onde todo assassinato é uma decisão administrativa.","watch":["Paramount+","Prime Video"],"archival":false},
+ {"id":"nashville-1975","title":"Nashville","originalTitle":"Nashville","year":1975,"country":"Estados Unidos","director":"Robert Altman","runtime":160,"movement":"new-hollywood","rating":92,"relevance":90,"synopsis":"Vinte e quatro personagens cruzam cinco dias de música country e campanha eleitoral. Som sobreposto em oito canais: ninguém espera a fala do outro terminar.","watch":["Criterion Channel","Prime Video"],"archival":false},
+ {"id":"taxi-driver-1976","title":"Taxi Driver","originalTitle":"Taxi Driver","year":1976,"country":"Estados Unidos","director":"Martin Scorsese","runtime":114,"movement":"new-hollywood","rating":95,"relevance":94,"synopsis":"Um veterano insone dirige à noite por Manhattan e decide limpar a cidade sozinho. O vapor da rua, o neon vermelho e o último saxofone de Bernard Herrmann.","watch":["Netflix","Prime Video"],"archival":false},
+ {"id":"days-heaven-1978","title":"Cinzas no Paraíso","originalTitle":"Days of Heaven","year":1978,"country":"Estados Unidos","director":"Terrence Malick","runtime":94,"movement":"new-hollywood","rating":90,"relevance":85,"synopsis":"Três trabalhadores migrantes chegam à colheita de trigo do Texas em 1916 e armam uma farsa que termina em fogo. Filmado quase inteiro na hora mágica.","watch":["Criterion Channel","Max"],"archival":false},
+
+ {"id":"rashomon-1950","title":"Rashômon","originalTitle":"Rashōmon","year":1950,"country":"Japão","director":"Akira Kurosawa","runtime":88,"movement":"japao-ouro","rating":96,"relevance":98,"synopsis":"Quatro testemunhas narram o mesmo assassinato na floresta, e as quatro versões se contradizem. O Leão de Ouro em Veneza abriu o cinema japonês ao mundo.","watch":["Criterion Channel","MUBI"],"archival":false},
+ {"id":"ugetsu-1953","title":"Contos da Lua Vaga","originalTitle":"Ugetsu monogatari","year":1953,"country":"Japão","director":"Kenji Mizoguchi","runtime":96,"movement":"japao-ouro","rating":95,"relevance":93,"synopsis":"Dois camponeses deixam as mulheres para enriquecer durante a guerra civil; um deles é retido por um fantasma. O plano-sequência como pincel sobre a névoa do lago.","watch":["Criterion Channel"],"archival":false},
+ {"id":"tokyo-1953","title":"Era uma Vez em Tóquio","originalTitle":"Tōkyō monogatari","year":1953,"country":"Japão","director":"Yasujirō Ozu","runtime":136,"movement":"japao-ouro","rating":98,"relevance":96,"synopsis":"Um casal de idosos viaja de Onomichi para visitar os filhos adultos em Tóquio e descobre que não há tempo para eles. A câmera nunca se levanta do tatame.","watch":["Criterion Channel","MUBI"],"archival":false},
+ {"id":"shichinin-1954","title":"Os Sete Samurais","originalTitle":"Shichinin no samurai","year":1954,"country":"Japão","director":"Akira Kurosawa","runtime":207,"movement":"japao-ouro","rating":97,"relevance":97,"synopsis":"Uma aldeia de camponeses contrata sete rōnin para enfrentar os bandidos que levam sua colheita. A batalha final na lama reescreveu a decupagem de ação.","watch":["Criterion Channel","MUBI"],"archival":false},
+
+ {"id":"ringu-1998","title":"O Chamado","originalTitle":"Ringu","year":1998,"country":"Japão","director":"Hideo Nakata","runtime":96,"movement":"j-horror","rating":87,"relevance":93,"synopsis":"Uma repórter investiga uma fita VHS que mata quem a assiste em sete dias. O medo mora na má qualidade da imagem — e no fato de que ela se copia.","watch":["Prime Video","Shudder"],"archival":false},
+ {"id":"kairo-2001","title":"Pulse","originalTitle":"Kairo","year":2001,"country":"Japão","director":"Kiyoshi Kurosawa","runtime":118,"movement":"j-horror","rating":85,"relevance":88,"synopsis":"Os mortos começam a chegar pela internet discada e a solidão se espalha como epidemia. Enquadramentos amplos onde a aparição ocupa o canto do plano.","watch":["Criterion Channel","Shudder"],"archival":false},
+ {"id":"juon-2002","title":"O Grito","originalTitle":"Ju-on","year":2002,"country":"Japão","director":"Takashi Shimizu","runtime":92,"movement":"j-horror","rating":78,"relevance":82,"synopsis":"Uma casa em Nerima retém a fúria de um crime doméstico e contamina todos que entram. Narrativa em fragmentos fora de ordem, cada um visto por uma vítima.","watch":["Shudder","Prime Video"],"archival":false},
+ {"id":"honogurai-2002","title":"Água Negra","originalTitle":"Honogurai mizu no soko kara","year":2002,"country":"Japão","director":"Hideo Nakata","runtime":101,"movement":"j-horror","rating":80,"relevance":76,"synopsis":"Uma mãe em disputa pela guarda da filha se muda para um edifício onde o teto não para de vazar. O horror doméstico escorrendo da caixa d’água.","watch":["Shudder"],"archival":false},
+
+ {"id":"beiqing-1989","title":"Cidade Dolorosa","originalTitle":"Beiqing chengshi","year":1989,"country":"Taiwan","director":"Hou Hsiao-hsien","runtime":157,"movement":"taiwan","rating":94,"relevance":93,"synopsis":"Quatro irmãos atravessam a transição de Taiwan do domínio japonês ao Terror Branco. Primeiro filme a nomear o massacre de 1947 — e Leão de Ouro em Veneza.","watch":["MUBI","Criterion Channel"],"archival":false},
+ {"id":"brighter-1991","title":"Brighter Summer Day","originalTitle":"Gu ling jie shaonian sha ren shijian","year":1991,"country":"Taiwan","director":"Edward Yang","runtime":237,"movement":"taiwan","rating":95,"relevance":90,"synopsis":"Taipé, 1960: filhos de exilados do continente formam gangues entre o toque de recolher e o rock americano. Quatro horas que terminam num único gesto irreversível.","watch":["Criterion Channel"],"archival":false},
+ {"id":"yiyi-2000","title":"Yi Yi","originalTitle":"Yi Yi","year":2000,"country":"Taiwan","director":"Edward Yang","runtime":173,"movement":"taiwan","rating":96,"relevance":89,"synopsis":"Três gerações de uma família de Taipé entre um casamento e um enterro. Um menino fotografa a nuca das pessoas, porque ninguém consegue ver a própria.","watch":["Criterion Channel","MUBI"],"archival":false},
+
+ {"id":"festen-1998","title":"Festa de Família","originalTitle":"Festen","year":1998,"country":"Dinamarca","director":"Thomas Vinterberg","runtime":105,"movement":"dogma95","rating":88,"relevance":92,"synopsis":"No jantar dos sessenta anos do patriarca, o filho mais velho faz um discurso que destrói a família. Dogma nº 1, filmado em vídeo com a luz da própria sala.","watch":["MUBI","Prime Video"],"archival":false},
+ {"id":"idioterne-1998","title":"Os Idiotas","originalTitle":"Idioterne","year":1998,"country":"Dinamarca","director":"Lars von Trier","runtime":117,"movement":"dogma95","rating":76,"relevance":85,"synopsis":"Um grupo de jovens burgueses finge deficiência em público para encontrar o próprio “idiota interior”. Dogma nº 2, e o teste mais desconfortável do manifesto.","watch":["MUBI"],"archival":false},
+ {"id":"italiensk-2000","title":"Italiano para Principiantes","originalTitle":"Italiensk for begyndere","year":2000,"country":"Dinamarca","director":"Lone Scherfig","runtime":112,"movement":"dogma95","rating":74,"relevance":70,"synopsis":"Seis solitários de um subúrbio de Copenhague se encontram num curso noturno de italiano. Dogma nº 12 — a prova de que o voto de castidade também servia à comédia.","watch":["Prime Video"],"archival":false}
+]
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- dados ---------------- */
+  var MOVEMENTS = JSON.parse(document.getElementById("db-movements").textContent);
+  var FILMS = JSON.parse(document.getElementById("db-films").textContent);
+  var MV = {};
+  MOVEMENTS.forEach(function(m){ MV[m.id] = m; });
+  FILMS.forEach(function(f, i){ f.cat = String(i + 1).padStart(3, "0"); });
+
+  var CURATED = ["ladri-1948","bout-souffle-1960","deus-diabo-1964","tokyo-1953","metropolis-1927","ringu-1998"];
+
+  var state = { mode:"browse", view:"grid", country:"", decade:"", movement:"", sort:"rating" };
+
+  /* ---------------- utilidades ---------------- */
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c];
+    });
+  }
+  function decadeOf(y){ return Math.floor(y / 10) * 10; }
+  function byId(id){ return document.getElementById(id); }
+  function filmById(id){
+    for (var i = 0; i < FILMS.length; i++) if (FILMS[i].id === id) return FILMS[i];
+    return null;
+  }
+  function tint(f){
+    var m = MV[f.movement];
+    return "--h:" + m.hue + ";--s:" + m.sat;
+  }
+  function runtimeLabel(n){ return Math.floor(n / 60) + "h " + String(n % 60).padStart(2, "0") + "min"; }
+
+  /* ---------------- placa (pôster tipográfico) ---------------- */
+  function plate(f){
+    return '<div class="plate" style="' + tint(f) + '">' +
+             '<span class="frame"></span>' +
+             '<div class="plate-top">' +
+               '<span class="plate-cat">' + f.cat + '</span>' +
+               '<span class="plate-cat">' + f.year + '</span>' +
+             '</div>' +
+             '<p class="plate-title">' + esc(f.originalTitle) + '</p>' +
+             '<div class="plate-foot">' +
+               '<span class="dir">' + esc(f.director) + '</span>' +
+               '<span>' + f.runtime + "'" + '</span>' +
+             '</div>' +
+           '</div>';
+  }
+
+  /* ---------------- grade e lista ---------------- */
+  function cardHTML(f){
+    return '<button type="button" class="film-card" data-film="' + f.id + '">' +
+             plate(f) +
+             '<span class="cap">' +
+               '<h3>' + esc(f.title) + '</h3>' +
+               '<p>' + esc(f.director) + ' · ' + f.year + '</p>' +
+             '</span>' +
+           '</button>';
+  }
+  function rowHTML(f, i){
+    return '<button type="button" class="ed-row" data-film="' + f.id + '">' +
+             '<span class="ed-idx">' + String(i + 1).padStart(2, "0") + '</span>' +
+             '<span class="ed-main">' +
+               '<h3>' + esc(f.title) + '<span class="orig">' + esc(f.originalTitle) + '</span></h3>' +
+               '<p>' + esc(f.synopsis) + '</p>' +
+               '<span class="mv">' + esc(MV[f.movement].name) + '</span>' +
+             '</span>' +
+             '<span class="ed-meta dir">' + esc(f.director) + '</span>' +
+             '<span class="ed-meta yr">' + f.year + '</span>' +
+             '<span class="ed-meta ct dim">' + esc(f.country) + '</span>' +
+             '<span class="ed-score">' + f.rating + '</span>' +
+           '</button>';
+  }
+
+  /* ---------------- escolas ---------------- */
+  function renderSchools(){
+    byId("schools").innerHTML = MOVEMENTS.map(function(m){
+      var essentials = FILMS.filter(function(f){ return f.movement === m.id; })
+        .sort(function(a, b){ return b.relevance - a.relevance; })
+        .slice(0, 3);
+      return '<article class="school" style="--h:' + m.hue + ';--s:' + m.sat + '">' +
+        '<span class="strip"></span>' +
+        '<div class="school-top">' +
+          '<h3><span class="loc">' + esc(m.region) + '</span>' + esc(m.name) + '</h3>' +
+          '<span class="yrs">' + esc(m.years) + '</span>' +
+        '</div>' +
+        '<p class="abstract">' + esc(m.abstract) + '</p>' +
+        '<dl>' +
+          '<dt>Diretores</dt><dd>' + m.keyDirectors.map(esc).join(" · ") + '</dd>' +
+          '<dt>Estética</dt><dd>' + esc(m.aesthetic) + '</dd>' +
+        '</dl>' +
+        '<div class="essentials">' +
+          essentials.map(function(f){
+            return '<button type="button" data-film="' + f.id + '">' + esc(f.title) + ' <span style="color:var(--faint)">' + f.year + '</span></button>';
+          }).join("") +
+        '</div>' +
+        '<button type="button" class="go" data-school="' + m.id + '">Ver as ' +
+          FILMS.filter(function(f){ return f.movement === m.id; }).length + ' obras</button>' +
+      '</article>';
+    }).join("");
+  }
+
+  /* ---------------- filtros ---------------- */
+  function countries(){
+    var set = {};
+    FILMS.forEach(function(f){ set[f.country] = 1; });
+    return Object.keys(set).sort(function(a, b){ return a.localeCompare(b, "pt"); });
+  }
+  function decades(){
+    var set = {};
+    FILMS.forEach(function(f){ set[decadeOf(f.year)] = 1; });
+    return Object.keys(set).map(Number).sort(function(a, b){ return a - b; });
+  }
+  function buildControls(){
+    byId("f-country").innerHTML = '<option value="">Todos os países</option>' +
+      countries().map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join("");
+    byId("f-decade").innerHTML = '<option value="">Todas as décadas</option>' +
+      decades().map(function(d){ return '<option value="' + d + '">Anos ' + d + '</option>'; }).join("");
+    byId("f-movement").innerHTML = '<option value="">Todas as escolas</option>' +
+      MOVEMENTS.map(function(m){ return '<option value="' + m.id + '">' + esc(m.name) + '</option>'; }).join("");
+    byId("f-sort").innerHTML = [
+      ['rating',     'Nota do arquivo'],
+      ['relevance',  'Relevância histórica'],
+      ['year-desc',  'Ano — mais recente'],
+      ['year-asc',   'Ano — mais antigo'],
+      ['title',      'Título A–Z']
+    ].map(function(o){ return '<option value="' + o[0] + '">' + o[1] + '</option>'; }).join("");
+  }
+
+  function filtered(){
+    return FILMS.filter(function(f){
+      if (state.country  && f.country !== state.country) return false;
+      if (state.decade   && decadeOf(f.year) !== Number(state.decade)) return false;
+      if (state.movement && f.movement !== state.movement) return false;
+      return true;
+    });
+  }
+  function sorted(list){
+    var l = list.slice();
+    if (state.sort === "rating")      l.sort(function(a,b){ return b.rating - a.rating || a.year - b.year; });
+    else if (state.sort === "relevance") l.sort(function(a,b){ return b.relevance - a.relevance || a.year - b.year; });
+    else if (state.sort === "year-desc") l.sort(function(a,b){ return b.year - a.year; });
+    else if (state.sort === "year-asc")  l.sort(function(a,b){ return a.year - b.year; });
+    else l.sort(function(a,b){ return a.title.localeCompare(b.title, "pt"); });
+    return l;
+  }
+
+  /* ---------------- chips de filtro ativo ---------------- */
+  function renderChips(){
+    var parts = [];
+    if (state.country)  parts.push(['country',  state.country]);
+    if (state.decade)   parts.push(['decade',   'Anos ' + state.decade]);
+    if (state.movement) parts.push(['movement', MV[state.movement].name]);
+    var html = parts.map(function(p){
+      return '<span class="chip">' + esc(p[1]) +
+             '<button type="button" data-drop="' + p[0] + '" aria-label="Remover filtro">×</button></span>';
+    }).join("");
+    if (parts.length > 1) html += '<button type="button" class="clear" data-drop="all">Limpar tudo</button>';
+    byId("chips").innerHTML = html;
+  }
+
+  /* ---------------- rankings agrupados ---------------- */
+  function groupRank(key){
+    var list = filtered(), groups = {};
+    list.forEach(function(f){
+      var g = key === "decade" ? decadeOf(f.year) : f.country;
+      (groups[g] = groups[g] || []).push(f);
+    });
+    var keys = Object.keys(groups);
+    keys.sort(key === "decade"
+      ? function(a,b){ return Number(a) - Number(b); }
+      : function(a,b){ return a.localeCompare(b, "pt"); });
+
+    if (!keys.length) return "";
+    return keys.map(function(g){
+      var items = groups[g].sort(function(a,b){ return b.rating - a.rating || a.year - b.year; }).slice(0, 5);
+      return '<section class="rank-group">' +
+        '<div class="rank-head">' +
+          '<span class="t">' + (key === "decade" ? "Anos " + g : esc(g)) + '</span>' +
+          '<span class="s">' + groups[g].length + (groups[g].length === 1 ? " obra" : " obras") + ' no acervo</span>' +
+        '</div>' +
+        '<div class="rank-list">' +
+          items.map(function(f, i){
+            return '<button type="button" class="rank-row" data-film="' + f.id + '">' +
+              '<span class="pos">' + (i + 1) + '</span>' +
+              '<span class="ti">' + esc(f.title) +
+                '<small>' + esc(f.director) + ' · ' + f.year + ' · ' + esc(MV[f.movement].name) + '</small>' +
+              '</span>' +
+              '<span class="sc">' + f.rating + '</span>' +
+            '</button>';
+          }).join("") +
+        '</div>' +
+      '</section>';
+    }).join("");
+  }
+
+  /* ---------------- render principal ---------------- */
+  function render(){
+    var out = byId("results");
+    var list = sorted(filtered());
+
+    byId("result-count").textContent = list.length + (list.length === 1 ? " obra" : " obras");
+
+    if (!list.length){
+      out.innerHTML = '<p class="empty">Nenhuma obra responde a esses filtros.' +
+        '<button type="button" data-drop="all">Limpar filtros</button></p>';
+    } else if (state.mode === "browse"){
+      out.innerHTML = state.view === "grid"
+        ? '<div class="grid">' + list.map(cardHTML).join("") + '</div>'
+        : '<div class="ed-list">' + list.map(rowHTML).join("") + '</div>';
+    } else {
+      out.innerHTML = groupRank(state.mode === "decade" ? "decade" : "country");
+    }
+
+    ["browse","decade","country"].forEach(function(m){
+      byId("mode-" + m).setAttribute("aria-pressed", String(state.mode === m));
+    });
+    byId("view-grid").setAttribute("aria-pressed", String(state.view === "grid"));
+    byId("view-list").setAttribute("aria-pressed", String(state.view === "list"));
+    var rankMode = state.mode !== "browse";
+    byId("view-grid").parentNode.style.opacity = rankMode ? ".35" : "1";
+    byId("view-grid").disabled = rankMode;
+    byId("view-list").disabled = rankMode;
+    byId("f-sort").disabled = rankMode;
+    byId("f-sort").parentNode.parentNode.style.opacity = rankMode ? ".35" : "1";
+    renderChips();
+  }
+
+  function renderCurated(){
+    byId("curated").innerHTML = CURATED.map(function(id){ return cardHTML(filmById(id)); }).join("");
+  }
+
+  /* ---------------- ficha do filme ---------------- */
+  var lastFocus = null;
+
+  function openFilm(id){
+    var f = filmById(id);
+    if (!f) return;
+    var m = MV[f.movement];
+    var sameDirector = FILMS.filter(function(x){ return x.director === f.director && x.id !== f.id; }).slice(0, 3);
+    var sameMovement = FILMS.filter(function(x){ return x.movement === f.movement && x.id !== f.id; })
+      .sort(function(a,b){ return b.relevance - a.relevance; }).slice(0, 3);
+
+    byId("sheet").innerHTML =
+      '<div class="sheet-bar">' +
+        '<span class="cat">Catálogo ' + f.cat + ' · ' + esc(m.name) + '</span>' +
+        '<button type="button" class="x" id="sheet-close">Fechar <span aria-hidden="true">×</span></button>' +
+      '</div>' +
+      '<div class="sheet-body">' +
+        plate(f) +
+        '<div class="sheet-main">' +
+          '<div>' +
+            '<h2 id="sheet-title">' + esc(f.title) + '</h2>' +
+            '<p class="orig-t">' + esc(f.originalTitle) + '</p>' +
+          '</div>' +
+          '<div class="tech">' +
+            '<div><span class="k">Direção</span><span class="v">' + esc(f.director) + '</span></div>' +
+            '<div><span class="k">Ano</span><span class="v">' + f.year + '</span></div>' +
+            '<div><span class="k">País</span><span class="v">' + esc(f.country) + '</span></div>' +
+            '<div><span class="k">Duração</span><span class="v">' + runtimeLabel(f.runtime) + '</span></div>' +
+            '<div><span class="k">Escola</span><span class="v">' + esc(m.name) + '</span></div>' +
+          '</div>' +
+          '<p class="synopsis">' + esc(f.synopsis) + '</p>' +
+          '<div class="score-pair">' +
+            '<div><span class="n">' + f.rating + '<sup>/100</sup></span><span class="k">Nota do arquivo</span></div>' +
+            '<div><span class="n">' + f.relevance + '<sup>/100</sup></span><span class="k">Relevância histórica</span></div>' +
+          '</div>' +
+          '<div>' +
+            '<p class="block-t">Onde assistir</p>' +
+            '<div class="where">' + f.watch.map(function(w){
+              return '<span' + (f.archival ? ' class="archive"' : '') + '>' + esc(w) + '</span>';
+            }).join("") + '</div>' +
+          '</div>' +
+          '<div class="links">' +
+            '<button type="button" data-school="' + m.id + '"><i>Escola</i>Explorar ' + esc(m.name) + '</button>' +
+            (sameDirector.length
+              ? sameDirector.map(function(x, i){
+                  return '<button type="button" data-film="' + x.id + '"><i>' +
+                    (i === 0 ? "De " + esc(f.director.split(" ").slice(-1)[0]) : "&nbsp;") +
+                    '</i>' + esc(x.title) + ' <span style="color:var(--faint);margin-left:6px">' + x.year + '</span></button>';
+                }).join("")
+              : "") +
+            sameMovement.map(function(x, i){
+              return '<button type="button" data-film="' + x.id + '"><i>' +
+                (i === 0 ? "Na mesma corrente" : "&nbsp;") +
+                '</i>' + esc(x.title) + ' <span style="color:var(--faint);margin-left:6px">' + x.year + '</span></button>';
+            }).join("") +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    if (!lastFocus) lastFocus = document.activeElement;
+    byId("scrim").hidden = false;
+    document.body.style.overflow = "hidden";
+    byId("sheet-close").focus();
+  }
+
+  function closeFilm(){
+    byId("scrim").hidden = true;
+    document.body.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+    lastFocus = null;
+  }
+
+  /* ---------------- busca ---------------- */
+  function findResults(q){
+    q = q.trim().toLowerCase();
+    if (!q) return [];
+    return FILMS.filter(function(f){
+      return (f.title + " " + f.originalTitle + " " + f.director + " " + MV[f.movement].name + " " + f.country)
+        .toLowerCase().indexOf(q) !== -1;
+    }).slice(0, 8);
+  }
+  function renderFind(){
+    var res = findResults(byId("find-input").value);
+    byId("find-out").innerHTML = res.length
+      ? res.map(function(f){
+          return '<button type="button" data-film="' + f.id + '">' +
+            '<span class="t">' + esc(f.title) + '<small>' + esc(f.director) + ' · ' + f.year + ' · ' + esc(f.country) + '</small></span>' +
+            '<span class="k">' + esc(MV[f.movement].name) + '</span>' +
+          '</button>';
+        }).join("")
+      : (byId("find-input").value.trim() ? '<p class="empty" style="padding-block:28px;font-size:17px">Nada no acervo com esse nome.</p>' : "");
+  }
+  function openFind(){
+    byId("find").hidden = false;
+    document.body.style.overflow = "hidden";
+    byId("find-input").focus();
+    byId("find-input").select();
+  }
+  function closeFind(){
+    byId("find").hidden = true;
+    if (byId("scrim").hidden) document.body.style.overflow = "";
+  }
+
+  /* ---------------- navegação por escola ---------------- */
+  function goToSchool(id){
+    state.movement = id;
+    state.mode = "browse";
+    byId("f-movement").value = id;
+    render();
+    closeFilm();
+    closeFind();
+    byId("explorar").scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /* ---------------- esquema de dados ---------------- */
+  function paintSchema(){
+    byId("schema").innerHTML = [
+      '<i>// movements.json — a coleção que governa o resto</i>',
+      '{',
+      '  <b>"id"</b>:            <u>"cinema-novo"</u>,      <i>// slug, chave primária</i>',
+      '  <b>"name"</b>:          <u>"Cinema Novo"</u>,',
+      '  <b>"region"</b>:        <u>"Brasil"</u>,',
+      '  <b>"years"</b>:         <u>"1955–1972"</u>,        <i>// faixa editorial, não data exata</i>',
+      '  <b>"abstract"</b>:      <u>"…"</u>,                <i>// 2–3 frases de contexto histórico</i>',
+      '  <b>"aesthetic"</b>:     <u>"…"</u>,                <i>// marcas formais, separadas por vírgula</i>',
+      '  <b>"keyDirectors"</b>:  [<u>"Glauber Rocha"</u>, …],',
+      '  <b>"hue"</b>:           24,                 <i>// tinta da placa (HSL)</i>',
+      '  <b>"sat"</b>:           <u>"18%"</u>',
+      '}',
+      '',
+      '<i>// films.json — uma linha por obra</i>',
+      '{',
+      '  <b>"id"</b>:            <u>"deus-diabo-1964"</u>,   <i>// slug + ano</i>',
+      '  <b>"title"</b>:         <u>"…"</u>,                <i>// título de distribuição local</i>',
+      '  <b>"originalTitle"</b>: <u>"…"</u>,                <i>// usado na placa tipográfica</i>',
+      '  <b>"year"</b>:          1964,               <i>// década é derivada, nunca armazenada</i>',
+      '  <b>"country"</b>:       <u>"Brasil"</u>,',
+      '  <b>"director"</b>:      <u>"Glauber Rocha"</u>,',
+      '  <b>"runtime"</b>:       125,                <i>// minutos, inteiro</i>',
+      '  <b>"movement"</b>:      <u>"cinema-novo"</u>,       <i>// FK → movements.id</i>',
+      '  <b>"rating"</b>:        94,                 <i>// nota do arquivo, 0–100</i>',
+      '  <b>"relevance"</b>:     97,                 <i>// relevância histórica, 0–100</i>',
+      '  <b>"synopsis"</b>:      <u>"…"</u>,                <i>// 1–2 frases, sem spoiler</i>',
+      '  <b>"watch"</b>:         [<u>"MUBI"</u>, …],         <i>// plataformas e acervos</i>',
+      '  <b>"archival"</b>:      false               <i>// true → preservação/domínio público</i>',
+      '}'
+    ].join("\n");
+
+    var f = filmById("deus-diabo-1964");
+    byId("sample").textContent = JSON.stringify(f, null, 2);
+  }
+
+  /* ---------------- eventos ---------------- */
+  document.addEventListener("click", function(e){
+    var t = e.target.closest("[data-film],[data-school],[data-drop],[data-mode],[data-view]");
+    if (!t) return;
+
+    if (t.hasAttribute("data-mode")){
+      state.mode = t.getAttribute("data-mode");
+      render();
+      return;
+    }
+    if (t.hasAttribute("data-view")){
+      state.view = t.getAttribute("data-view");
+      render();
+      return;
+    }
+    if (t.hasAttribute("data-drop")){
+      var k = t.getAttribute("data-drop");
+      if (k === "all"){
+        state.country = state.decade = state.movement = "";
+        byId("f-country").value = ""; byId("f-decade").value = ""; byId("f-movement").value = "";
+      } else {
+        state[k] = "";
+        byId("f-" + k).value = "";
+      }
+      render();
+      return;
+    }
+    if (t.hasAttribute("data-school")){ goToSchool(t.getAttribute("data-school")); return; }
+    if (t.hasAttribute("data-film")){ closeFind(); openFilm(t.getAttribute("data-film")); }
+  });
+
+  byId("f-country").addEventListener("change", function(){ state.country = this.value; render(); });
+  byId("f-decade").addEventListener("change", function(){ state.decade = this.value; render(); });
+  byId("f-movement").addEventListener("change", function(){ state.movement = this.value; render(); });
+  byId("f-sort").addEventListener("change", function(){ state.sort = this.value; render(); });
+
+  byId("scrim").addEventListener("click", function(e){ if (e.target === this) closeFilm(); });
+  document.addEventListener("click", function(e){
+    if (e.target.closest("#sheet-close")) closeFilm();
+  });
+
+  byId("btn-find").addEventListener("click", openFind);
+  byId("find").addEventListener("click", function(e){ if (e.target === this) closeFind(); });
+  byId("find-input").addEventListener("input", renderFind);
+  byId("find-input").addEventListener("keydown", function(e){
+    if (e.key === "Enter"){
+      var first = byId("find-out").querySelector("[data-film]");
+      if (first) first.click();
+    }
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape"){
+      if (!byId("find").hidden) closeFind();
+      else if (!byId("scrim").hidden) closeFilm();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k"){
+      e.preventDefault();
+      openFind();
+    }
+  });
+
+  /* ---------------- início ---------------- */
+  byId("stat-films").textContent = FILMS.length + " catalogadas";
+  byId("stat-schools").textContent = MOVEMENTS.length + " correntes";
+  buildControls();
+  renderSchools();
+  renderCurated();
+  paintSchema();
+  render();
+})();
+</script>
