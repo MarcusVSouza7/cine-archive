@@ -161,10 +161,30 @@ No ar pelo GitHub Pages: **https://marcusvsouza7.github.io/cine-archive/**
 
 ## Estado
 
-Protótipo de conceito visual e arquitetura de informação. O que viria depois:
+**v0 — protótipo estático, no ar.** Conceito visual e arquitetura de informação, com dados embutidos.
 
-- [ ] Trocar as placas tipográficas por cartazes licenciados nos mesmos slots 2:3
-- [ ] Mover `data/` para uma API e carregar por `fetch`
+**v1 — em definição.** Catálogo enriquecido pelo TMDb e sistema de perfis com log, notas e reviews. As decisões de arquitetura, o modelo de dados e as fases estão em **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
+
+Resumo: Next.js na Vercel + Supabase (Postgres, Auth, RLS). O acervo continua curado — o TMDb traz pôster, elenco e disponibilidade, ligado por `tmdb_id`, e **não** define o que entra. `movement` permanece dado seu, porque o TMDb não tem esse conceito.
+
+```
+supabase/migrations/0001_init.sql   schema com RLS: profiles, movements, films, entries
+supabase/seed.sql                   gerado dos JSON — não editar a mão
+scripts/generate-seed.mjs           JSON -> seed.sql, com validação de FK e slug
+scripts/backfill-tmdb-ids.mjs       preenche tmdb_id e poster_path; ambíguos vão para revisão
+```
+
+Os scripts não têm dependências — `fetch` global e `node:fs`, Node 18+.
+
+```sh
+node scripts/generate-seed.mjs
+TMDB_READ_TOKEN=... node scripts/backfill-tmdb-ids.mjs --dry-run
+```
+
+### Depois de v1
+
+- [ ] Diário com múltiplas entradas por filme (remover o `unique` em `entries`)
+- [ ] Watchlist e listas ordenáveis
+- [ ] Seguir perfis e feed de atividade
 - [ ] Notas de arquivo com proveniência citada por obra
-- [ ] Páginas próprias por diretor e por escola, com URL própria
-- [ ] Disponibilidade de streaming por região, via provedor real
+- [ ] Páginas próprias por diretor
