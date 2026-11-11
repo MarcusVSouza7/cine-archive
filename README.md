@@ -237,7 +237,7 @@ O aviso de "modo protótipo" desaparece sozinho quando as duas fontes estão no 
 | `/conta` | handle, nome e bio |
 | `/login`, `/auth/callback` | OAuth Google e GitHub |
 
-Decisões e modelo de dados em **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**.
+Decisões e modelo de dados em **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**. O que falta fazer, em ordem, com o que bloqueia o quê, em **[`docs/ROADMAP.md`](docs/ROADMAP.md)**.
 
 ### Pontos de arquitetura que não são óbvios no código
 
