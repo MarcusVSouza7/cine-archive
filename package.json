@@ -10,17 +10,23 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "seed:gen": "node scripts/generate-seed.mjs",
+    "db:status": "node --env-file-if-exists=.env.local scripts/db.mjs status",
+    "db:migrate": "node --env-file-if-exists=.env.local scripts/db.mjs migrate",
+    "db:seed": "node --env-file-if-exists=.env.local scripts/db.mjs seed",
+    "db:check": "node --env-file-if-exists=.env.local scripts/db.mjs check",
     "tmdb:backfill": "node --env-file-if-exists=.env.local scripts/backfill-tmdb-ids.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.45.0",
     "next": "^15.1.0",
+    "pg": "^8.23.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "typescript": "^5.7.0"
