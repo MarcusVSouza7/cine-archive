@@ -143,7 +143,7 @@ Títulos, títulos originais, diretores, anos, países e durações são verific
 
 ## Rodar
 
-Abrir direto funciona, porque os dados estão embutidos no HTML em `<script type="application/json">`:
+`index.html` é um documento completo e autossuficiente — sem build, sem dependências, sem passo de instalação. Abrir direto funciona, porque os dados estão embutidos no próprio HTML em `<script type="application/json">`:
 
 ```sh
 start index.html      # Windows
@@ -154,6 +154,8 @@ Os arquivos em `data/` são a mesma fonte, extraídos para consumo por uma API o
 ```sh
 python -m http.server 8000
 ```
+
+No ar pelo GitHub Pages: **https://marcusvsouza7.github.io/cine-archive/**
 
 ---
 
